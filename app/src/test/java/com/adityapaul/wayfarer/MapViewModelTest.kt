@@ -127,6 +127,56 @@ class MapViewModelTest {
     }
 
     @Test
+    fun swapOriginAndDestination_swapsOriginAndDest() = runTest {
+        val origin = SearchResult(1L, "Howrah Bridge", "Howrah", "Bridge", 22.5851, 88.3468)
+        val destination = SearchResult(2L, "Victoria Memorial", "Kolkata", "Museum", 22.5448, 88.3425)
+
+        fakeRouteRepository.routeResult = Result.success(
+            RouteResult("Victoria Memorial", "Howrah Bridge", listOf(LatLng(22.5448, 88.3425), LatLng(22.5851, 88.3468)), 5400.0, 720.0)
+        )
+
+        viewModel.startRoutePlanning()
+        viewModel.selectOrigin(origin)
+        viewModel.selectDestination(destination)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.swapOriginAndDestination()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals("Victoria Memorial", state.routeState.origin?.name)
+        assertEquals("Howrah Bridge", state.routeState.destination?.name)
+    }
+
+    @Test
+    fun clearOrigin_clearsOriginAndResetsStep() {
+        val origin = SearchResult(1L, "Origin", "O", null, 22.5, 88.3)
+        viewModel.startRoutePlanning()
+        viewModel.selectOrigin(origin)
+
+        viewModel.clearOrigin()
+
+        val routeState = viewModel.uiState.value.routeState
+        assertNull(routeState.origin)
+        assertEquals(RouteSelectionStep.SELECT_ORIGIN, routeState.step)
+    }
+
+    @Test
+    fun clearDestination_clearsDestinationAndResetsStep() {
+        val origin = SearchResult(1L, "Origin", "O", null, 22.5, 88.3)
+        val dest = SearchResult(2L, "Dest", "D", null, 22.6, 88.4)
+        viewModel.startRoutePlanning()
+        viewModel.selectOrigin(origin)
+        viewModel.selectDestination(dest)
+
+        viewModel.clearDestination()
+
+        val routeState = viewModel.uiState.value.routeState
+        assertNull(routeState.destination)
+        assertEquals(RouteSelectionStep.SELECT_DEST, routeState.step)
+    }
+
+    @Test
     fun calculateRoute_failure_setsRouteError() = runTest {
         val origin = SearchResult(
             id = 1L,

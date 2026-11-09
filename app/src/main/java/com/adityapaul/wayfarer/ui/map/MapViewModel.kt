@@ -292,6 +292,50 @@ class MapViewModel(
         }
     }
 
+    fun clearOrigin() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                routeState = currentState.routeState.copy(
+                    origin = null,
+                    step = RouteSelectionStep.SELECT_ORIGIN,
+                    activeRoute = null
+                )
+            )
+        }
+    }
+
+    fun clearDestination() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                routeState = currentState.routeState.copy(
+                    destination = null,
+                    step = RouteSelectionStep.SELECT_DEST,
+                    activeRoute = null
+                )
+            )
+        }
+    }
+
+    fun swapOriginAndDestination() {
+        val currentOrigin = _uiState.value.routeState.origin
+        val currentDest = _uiState.value.routeState.destination
+
+        if (currentOrigin != null || currentDest != null) {
+            _uiState.update { currentState ->
+                currentState.copy(
+                    routeState = currentState.routeState.copy(
+                        origin = currentDest,
+                        destination = currentOrigin
+                    )
+                )
+            }
+
+            if (currentOrigin != null && currentDest != null) {
+                calculateRoute(currentDest, currentOrigin)
+            }
+        }
+    }
+
     fun selectDestination(destination: SearchResult) {
         val origin = _uiState.value.routeState.origin
         _uiState.update { currentState ->
