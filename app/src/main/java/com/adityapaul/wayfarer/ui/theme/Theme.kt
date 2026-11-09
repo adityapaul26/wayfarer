@@ -15,7 +15,7 @@ import androidx.core.view.WindowCompat
 @Composable
 fun WayfarerTheme(
     themeMode: AppThemeMode = AppThemeMode.SYSTEM,
-    palette: AppColorPalette = AppColorPalette.SLATE_BLUE,
+    palette: AppColorPalette = AppColorPalette.LAVENDER_PURPLE,
     content: @Composable () -> Unit
 ) {
     val darkTheme = when (themeMode) {
@@ -27,38 +27,48 @@ fun WayfarerTheme(
     val colorScheme = if (darkTheme) {
         darkColorScheme(
             primary = palette.primaryDark,
-            onPrimary = Slate900,
-            primaryContainer = palette.accentDark.copy(alpha = 0.25f),
-            onPrimaryContainer = palette.primaryDark,
-            secondary = palette.accentDark,
-            onSecondary = Slate900,
-            secondaryContainer = Slate800,
-            onSecondaryContainer = palette.accentDark,
-            background = Slate950,
-            onBackground = Slate50,
-            surface = Slate900,
-            onSurface = Slate50,
-            surfaceVariant = Slate800,
-            onSurfaceVariant = Slate400,
-            outline = Slate700
+            onPrimary = palette.onPrimaryDark,
+            primaryContainer = palette.primaryContainerDark,
+            onPrimaryContainer = palette.onPrimaryContainerDark,
+            secondary = palette.secondaryDark,
+            onSecondary = Color(0xFF1D192B),
+            secondaryContainer = palette.secondaryContainerDark,
+            onSecondaryContainer = Color(0xFFE8DEF8),
+            tertiary = palette.tertiaryDark,
+            onTertiary = Color(0xFF492532),
+            tertiaryContainer = palette.tertiaryContainerDark,
+            onTertiaryContainer = Color(0xFFFFD8E4),
+            background = palette.surfaceDark,
+            onBackground = Color(0xFFE6E1E5),
+            surface = palette.surfaceDark,
+            onSurface = Color(0xFFE6E1E5),
+            surfaceVariant = palette.surfaceContainerDark,
+            onSurfaceVariant = Color(0xFFCAC4D0),
+            outline = Color(0xFF938F96),
+            outlineVariant = Color(0xFF49454F)
         )
     } else {
         lightColorScheme(
             primary = palette.primaryLight,
-            onPrimary = Color.White,
-            primaryContainer = palette.accentLight.copy(alpha = 0.15f),
-            onPrimaryContainer = palette.accentLight,
-            secondary = palette.accentLight,
+            onPrimary = palette.onPrimaryLight,
+            primaryContainer = palette.primaryContainerLight,
+            onPrimaryContainer = palette.onPrimaryContainerLight,
+            secondary = palette.secondaryLight,
             onSecondary = Color.White,
-            secondaryContainer = Slate100,
-            onSecondaryContainer = Slate800,
-            background = Color.White,
-            onBackground = Slate900,
-            surface = Color.White,
-            onSurface = Slate900,
-            surfaceVariant = Slate100,
-            onSurfaceVariant = Slate600,
-            outline = Slate200
+            secondaryContainer = palette.secondaryContainerLight,
+            onSecondaryContainer = Color(0xFF1D192B),
+            tertiary = palette.tertiaryLight,
+            onTertiary = Color.White,
+            tertiaryContainer = palette.tertiaryContainerLight,
+            onTertiaryContainer = Color(0xFF31111D),
+            background = palette.surfaceLight,
+            onBackground = Color(0xFF1C1B1F),
+            surface = palette.surfaceLight,
+            onSurface = Color(0xFF1C1B1F),
+            surfaceVariant = palette.surfaceContainerLight,
+            onSurfaceVariant = Color(0xFF49454F),
+            outline = Color(0xFF79747E),
+            outlineVariant = Color(0xFFCAC4D0)
         )
     }
 

@@ -51,16 +51,23 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SettingsBrightness
 import androidx.compose.material.icons.filled.SwapVert
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -86,6 +93,7 @@ import com.adityapaul.wayfarer.data.search.SearchResult
 import com.adityapaul.wayfarer.ui.theme.AppColorPalette
 import com.adityapaul.wayfarer.ui.theme.AppThemeMode
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(
     modifier: Modifier = Modifier,
@@ -121,6 +129,7 @@ fun MapScreen(
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState)
         },
+        containerColor = MaterialTheme.colorScheme.background,
         modifier = modifier.fillMaxSize()
     ) { innerPadding ->
         Box(
@@ -137,7 +146,7 @@ fun MapScreen(
                 modifier = Modifier.fillMaxSize()
             )
 
-            // Top Header: Floating Search Bar or Route Selector Panel
+            // Top Header: Material 3 SearchBar Pill or Route Selector Panel
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -146,17 +155,17 @@ fun MapScreen(
                     .align(Alignment.TopCenter)
             ) {
                 if (routeState.step == RouteSelectionStep.NONE) {
-                    // Floating Single Search Bar
+                    // Material 3 Floating SearchBar Pill
                     Surface(
                         shape = CircleShape,
-                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
-                        tonalElevation = 6.dp,
-                        shadowElevation = 8.dp,
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        tonalElevation = 3.dp,
+                        shadowElevation = 4.dp,
                         modifier = Modifier
                             .fillMaxWidth()
                             .border(
                                 width = 1.dp,
-                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                                color = MaterialTheme.colorScheme.outlineVariant,
                                 shape = CircleShape
                             )
                     ) {
@@ -164,15 +173,15 @@ fun MapScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 8.dp, vertical = 2.dp)
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
-                            // Brand Logo Avatar Badge
+                            // M3 Brand Logo Avatar Badge
                             Surface(
                                 shape = CircleShape,
                                 color = MaterialTheme.colorScheme.primaryContainer,
                                 modifier = Modifier
                                     .size(40.dp)
-                                    .padding(start = 4.dp)
+                                    .padding(start = 2.dp)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Icon(
@@ -193,7 +202,7 @@ fun MapScreen(
                                     Text(
                                         text = "Search places, roads, landmarks...",
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                                     )
                                 },
                                 singleLine = true,
@@ -211,11 +220,14 @@ fun MapScreen(
                                 modifier = Modifier.weight(1f)
                             )
 
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
                                 if (searchState.query.isNotEmpty()) {
                                     IconButton(
                                         onClick = { viewModel.clearSearch() },
-                                        modifier = Modifier.size(38.dp)
+                                        modifier = Modifier.size(36.dp)
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Clear,
@@ -225,54 +237,54 @@ fun MapScreen(
                                     }
                                 }
 
-                                IconButton(
+                                FilledIconButton(
                                     onClick = {
                                         keyboardController?.hide()
                                         viewModel.submitSearch()
                                     },
-                                    modifier = Modifier.size(38.dp)
+                                    colors = IconButtonDefaults.filledIconButtonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        contentColor = MaterialTheme.colorScheme.onPrimary
+                                    ),
+                                    modifier = Modifier.size(40.dp)
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Search,
                                         contentDescription = "Submit Search",
-                                        tint = MaterialTheme.colorScheme.primary
+                                        modifier = Modifier.size(20.dp)
                                     )
                                 }
 
-                                Spacer(modifier = Modifier.width(4.dp))
-
-                                Surface(
-                                    shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.primary,
+                                FilledTonalIconButton(
+                                    onClick = { viewModel.startRoutePlanning() },
+                                    colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                                    ),
                                     modifier = Modifier.size(40.dp)
                                 ) {
-                                    IconButton(
-                                        onClick = { viewModel.startRoutePlanning() }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Directions,
-                                            contentDescription = "Directions",
-                                            tint = MaterialTheme.colorScheme.onPrimary,
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                    }
+                                    Icon(
+                                        imageVector = Icons.Default.Directions,
+                                        contentDescription = "Directions",
+                                        modifier = Modifier.size(20.dp)
+                                    )
                                 }
                             }
                         }
                     }
                 } else {
-                    // Refined Multi-Step Route Planning Panel
+                    // Material 3 Multi-Step Route Planning Panel
                     Surface(
-                        shape = RoundedCornerShape(24.dp),
-                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
-                        tonalElevation = 8.dp,
-                        shadowElevation = 10.dp,
+                        shape = RoundedCornerShape(28.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        tonalElevation = 6.dp,
+                        shadowElevation = 8.dp,
                         modifier = Modifier
                             .fillMaxWidth()
                             .border(
                                 width = 1.dp,
-                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
-                                shape = RoundedCornerShape(24.dp)
+                                color = MaterialTheme.colorScheme.outlineVariant,
+                                shape = RoundedCornerShape(28.dp)
                             )
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
@@ -299,43 +311,40 @@ fun MapScreen(
                                     modifier = Modifier.weight(1f)
                                 )
 
-                                // Swap Origin & Destination Action Button
-                                Surface(
-                                    shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                FilledTonalIconButton(
+                                    onClick = { viewModel.swapOriginAndDestination() },
+                                    colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                    ),
                                     modifier = Modifier.size(36.dp)
                                 ) {
-                                    IconButton(
-                                        onClick = { viewModel.swapOriginAndDestination() }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.SwapVert,
-                                            contentDescription = "Swap Origin and Destination",
-                                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                    }
+                                    Icon(
+                                        imageVector = Icons.Default.SwapVert,
+                                        contentDescription = "Swap Origin and Destination",
+                                        modifier = Modifier.size(20.dp)
+                                    )
                                 }
                             }
 
                             Spacer(modifier = Modifier.height(12.dp))
 
-                            // Interactive Origin Input Card
+                            // Interactive Origin Card
                             Surface(
-                                shape = RoundedCornerShape(14.dp),
-                                color = if (routeState.step == RouteSelectionStep.SELECT_ORIGIN) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surfaceVariant,
+                                shape = RoundedCornerShape(16.dp),
+                                color = if (routeState.step == RouteSelectionStep.SELECT_ORIGIN) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clip(RoundedCornerShape(14.dp))
+                                    .clip(RoundedCornerShape(16.dp))
                                     .clickable { viewModel.clearOrigin() }
                             ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)
+                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)
                                 ) {
                                     Surface(
                                         shape = CircleShape,
-                                        color = MaterialTheme.colorScheme.secondary,
+                                        color = MaterialTheme.colorScheme.primary,
                                         modifier = Modifier.size(10.dp)
                                     ) {}
                                     Spacer(modifier = Modifier.width(12.dp))
@@ -343,7 +352,7 @@ fun MapScreen(
                                         Text(
                                             text = "FROM (ORIGIN)",
                                             style = MaterialTheme.typography.labelMedium.copy(fontSize = 10.sp),
-                                            color = MaterialTheme.colorScheme.secondary,
+                                            color = MaterialTheme.colorScheme.primary,
                                             fontWeight = FontWeight.Bold
                                         )
                                         Text(
@@ -373,22 +382,22 @@ fun MapScreen(
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            // Interactive Destination Input Card
+                            // Interactive Destination Card
                             Surface(
-                                shape = RoundedCornerShape(14.dp),
-                                color = if (routeState.step == RouteSelectionStep.SELECT_DEST) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surfaceVariant,
+                                shape = RoundedCornerShape(16.dp),
+                                color = if (routeState.step == RouteSelectionStep.SELECT_DEST) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.surface,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clip(RoundedCornerShape(14.dp))
+                                    .clip(RoundedCornerShape(16.dp))
                                     .clickable { viewModel.clearDestination() }
                             ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)
+                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)
                                 ) {
                                     Surface(
                                         shape = CircleShape,
-                                        color = MaterialTheme.colorScheme.primary,
+                                        color = MaterialTheme.colorScheme.tertiary,
                                         modifier = Modifier.size(10.dp)
                                     ) {}
                                     Spacer(modifier = Modifier.width(12.dp))
@@ -396,7 +405,7 @@ fun MapScreen(
                                         Text(
                                             text = "TO (DESTINATION)",
                                             style = MaterialTheme.typography.labelMedium.copy(fontSize = 10.sp),
-                                            color = MaterialTheme.colorScheme.primary,
+                                            color = MaterialTheme.colorScheme.tertiary,
                                             fontWeight = FontWeight.Bold
                                         )
                                         Text(
@@ -459,34 +468,36 @@ fun MapScreen(
                                             }
                                         }
                                         if (routeState.step == RouteSelectionStep.SELECT_ORIGIN && uiState.userLocation != null) {
-                                            Surface(
-                                                shape = CircleShape,
-                                                color = MaterialTheme.colorScheme.primaryContainer,
-                                                modifier = Modifier.padding(end = 4.dp)
-                                            ) {
-                                                IconButton(
-                                                    onClick = { viewModel.selectOriginFromCurrentLocation() },
-                                                    modifier = Modifier.size(36.dp)
-                                                ) {
+                                            AssistChip(
+                                                onClick = { viewModel.selectOriginFromCurrentLocation() },
+                                                label = { Text("My Location", style = MaterialTheme.typography.labelMedium) },
+                                                leadingIcon = {
                                                     Icon(
                                                         imageVector = Icons.Default.MyLocation,
-                                                        contentDescription = "Use My Location",
-                                                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                                        modifier = Modifier.size(18.dp)
+                                                        contentDescription = "GPS",
+                                                        modifier = Modifier.size(16.dp)
                                                     )
-                                                }
-                                            }
+                                                },
+                                                colors = AssistChipDefaults.assistChipColors(
+                                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                                    labelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                                    leadingIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                                ),
+                                                shape = CircleShape,
+                                                modifier = Modifier.padding(end = 4.dp)
+                                            )
                                         }
-                                        IconButton(
+                                        FilledIconButton(
                                             onClick = {
                                                 keyboardController?.hide()
                                                 viewModel.submitSearch()
-                                            }
+                                            },
+                                            modifier = Modifier.size(36.dp)
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Default.Search,
                                                 contentDescription = "Search",
-                                                tint = MaterialTheme.colorScheme.primary
+                                                modifier = Modifier.size(18.dp)
                                             )
                                         }
                                     }
@@ -499,6 +510,7 @@ fun MapScreen(
                                         viewModel.submitSearch()
                                     }
                                 ),
+                                shape = RoundedCornerShape(16.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                                     unfocusedBorderColor = MaterialTheme.colorScheme.outline
@@ -509,25 +521,25 @@ fun MapScreen(
                     }
                 }
 
-                // Refined Search Results Dropdown Panel
+                // Material 3 Search Results Dropdown Panel
                 AnimatedVisibility(
                     visible = searchState.isExpanded || searchState.isSearching || searchState.errorMessage != null,
                     enter = fadeIn() + slideInVertically(),
                     exit = fadeOut() + slideOutVertically()
                 ) {
                     Surface(
-                        shape = RoundedCornerShape(20.dp),
-                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.98f),
-                        tonalElevation = 8.dp,
-                        shadowElevation = 10.dp,
+                        shape = RoundedCornerShape(24.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        tonalElevation = 6.dp,
+                        shadowElevation = 8.dp,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 8.dp)
                             .heightIn(max = 280.dp)
                             .border(
                                 width = 1.dp,
-                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
-                                shape = RoundedCornerShape(20.dp)
+                                color = MaterialTheme.colorScheme.outlineVariant,
+                                shape = RoundedCornerShape(24.dp)
                             )
                     ) {
                         Box(
@@ -602,7 +614,7 @@ fun MapScreen(
                 }
             }
 
-            // Floating Controls Bank (Right Side)
+            // Material 3 Floating Action Buttons Bank (Right Side)
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -610,17 +622,17 @@ fun MapScreen(
                     .align(Alignment.CenterEnd)
                     .padding(end = 16.dp)
             ) {
-                // Unified Zoom Control Pod (48dp touch targets)
+                // Unified M3 Zoom Control Surface (48dp touch targets)
                 Surface(
                     shape = RoundedCornerShape(24.dp),
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
-                    tonalElevation = 6.dp,
-                    shadowElevation = 8.dp,
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    tonalElevation = 4.dp,
+                    shadowElevation = 6.dp,
                     modifier = Modifier
                         .width(48.dp)
                         .border(
                             width = 1.dp,
-                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
+                            color = MaterialTheme.colorScheme.outlineVariant,
                             shape = RoundedCornerShape(24.dp)
                         )
                 ) {
@@ -637,7 +649,7 @@ fun MapScreen(
                         }
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = 8.dp),
-                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                            color = MaterialTheme.colorScheme.outlineVariant
                         )
                         IconButton(
                             onClick = { viewModel.zoomOut() },
@@ -652,97 +664,58 @@ fun MapScreen(
                     }
                 }
 
-                // Recenter Current User Location Button
-                Surface(
-                    shape = CircleShape,
-                    color = if (uiState.userLocation != null) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
-                    tonalElevation = 6.dp,
-                    shadowElevation = 8.dp,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .border(
-                            width = 1.dp,
-                            color = if (uiState.userLocation != null) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
-                            shape = CircleShape
-                        )
-                ) {
-                    IconButton(
-                        onClick = {
-                            if (uiState.isLocationPermissionGranted) {
-                                viewModel.recenterToUserLocation()
-                            } else {
-                                permissionLauncher.launch(
-                                    arrayOf(
-                                        Manifest.permission.ACCESS_FINE_LOCATION,
-                                        Manifest.permission.ACCESS_COARSE_LOCATION
-                                    )
+                // M3 My Location Small FAB
+                SmallFloatingActionButton(
+                    onClick = {
+                        if (uiState.isLocationPermissionGranted) {
+                            viewModel.recenterToUserLocation()
+                        } else {
+                            permissionLauncher.launch(
+                                arrayOf(
+                                    Manifest.permission.ACCESS_FINE_LOCATION,
+                                    Manifest.permission.ACCESS_COARSE_LOCATION
                                 )
-                            }
-                        },
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.MyLocation,
-                            contentDescription = "My Location",
-                            tint = if (uiState.userLocation != null) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onSurface
-                        )
-                    }
+                            )
+                        }
+                    },
+                    containerColor = if (uiState.userLocation != null) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = if (uiState.userLocation != null) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.MyLocation,
+                        contentDescription = "My Location"
+                    )
                 }
 
-                // Map Style Switcher Pod
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
-                    tonalElevation = 6.dp,
-                    shadowElevation = 8.dp,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
-                            shape = CircleShape
-                        )
+                // M3 Map Style Switcher Small FAB
+                SmallFloatingActionButton(
+                    onClick = { viewModel.toggleStyle() },
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(48.dp)
                 ) {
-                    IconButton(
-                        onClick = { viewModel.toggleStyle() },
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Layers,
-                            contentDescription = "Toggle Map Style (${uiState.styleType.displayName})",
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Default.Layers,
+                        contentDescription = "Toggle Map Style (${uiState.styleType.displayName})"
+                    )
                 }
 
-                // Settings Menu Button
-                Surface(
-                    shape = CircleShape,
-                    color = if (uiState.isSettingsOpen) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
-                    tonalElevation = 6.dp,
-                    shadowElevation = 8.dp,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .border(
-                            width = 1.dp,
-                            color = if (uiState.isSettingsOpen) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
-                            shape = CircleShape
-                        )
+                // M3 Settings Small FAB
+                SmallFloatingActionButton(
+                    onClick = { viewModel.toggleSettings() },
+                    containerColor = if (uiState.isSettingsOpen) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = if (uiState.isSettingsOpen) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(48.dp)
                 ) {
-                    IconButton(
-                        onClick = { viewModel.toggleSettings() },
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings",
-                            tint = if (uiState.isSettingsOpen) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Settings"
+                    )
                 }
             }
 
-            // Bottom Sheets Section (Settings, Active Route, or Selected Place Pin)
+            // Material 3 Bottom Sheets (Settings, Active Route, or Selected Place Pin)
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -758,35 +731,35 @@ fun MapScreen(
                     }
 
                     routeState.isCalculatingRoute || routeState.activeRoute != null -> {
-                        // Active Route Summary Sheet
+                        // Material 3 Active Route Summary Sheet
                         Surface(
-                            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 20.dp, bottomEnd = 20.dp),
-                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.98f),
-                            tonalElevation = 10.dp,
-                            shadowElevation = 12.dp,
+                            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 24.dp, bottomEnd = 24.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            tonalElevation = 8.dp,
+                            shadowElevation = 10.dp,
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
                                 .fillMaxWidth()
                                 .border(
                                     width = 1.dp,
-                                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
-                                    shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 20.dp, bottomEnd = 20.dp)
+                                    color = MaterialTheme.colorScheme.outlineVariant,
+                                    shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
                                 )
                         ) {
                             Column(
-                                modifier = Modifier.padding(18.dp),
+                                modifier = Modifier.padding(20.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 // Drag handle pill
                                 Surface(
                                     shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
                                     modifier = Modifier
                                         .width(36.dp)
                                         .height(4.dp)
                                 ) {}
 
-                                Spacer(modifier = Modifier.height(12.dp))
+                                Spacer(modifier = Modifier.height(14.dp))
 
                                 if (routeState.isCalculatingRoute) {
                                     Row(
@@ -809,64 +782,93 @@ fun MapScreen(
                                         )
                                     }
                                 } else routeState.activeRoute?.let { route ->
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Surface(
-                                            shape = CircleShape,
-                                            color = MaterialTheme.colorScheme.secondary,
-                                            modifier = Modifier.size(48.dp)
+                                    Column(modifier = Modifier.fillMaxWidth()) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.fillMaxWidth()
                                         ) {
-                                            Box(contentAlignment = Alignment.Center) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Navigation,
-                                                    contentDescription = "Navigation",
-                                                    tint = MaterialTheme.colorScheme.onSecondary,
-                                                    modifier = Modifier.size(24.dp)
-                                                )
-                                            }
-                                        }
-
-                                        Spacer(modifier = Modifier.width(14.dp))
-
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                Text(
-                                                    text = route.formattedDuration(),
-                                                    style = MaterialTheme.typography.headlineSmall,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = MaterialTheme.colorScheme.secondary
-                                                )
-                                                Spacer(modifier = Modifier.width(8.dp))
-                                                Surface(
-                                                    shape = RoundedCornerShape(8.dp),
-                                                    color = MaterialTheme.colorScheme.primaryContainer
-                                                ) {
-                                                    Text(
-                                                        text = route.formattedDistance(),
-                                                        style = MaterialTheme.typography.labelMedium,
-                                                        fontWeight = FontWeight.Bold,
-                                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                            Surface(
+                                                shape = CircleShape,
+                                                color = MaterialTheme.colorScheme.primary,
+                                                modifier = Modifier.size(48.dp)
+                                            ) {
+                                                Box(contentAlignment = Alignment.Center) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.Navigation,
+                                                        contentDescription = "Navigation",
+                                                        tint = MaterialTheme.colorScheme.onPrimary,
+                                                        modifier = Modifier.size(24.dp)
                                                     )
                                                 }
                                             }
-                                            Text(
-                                                text = "${route.originName} → ${route.destinationName}",
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis,
-                                                modifier = Modifier.padding(top = 2.dp)
-                                            )
+
+                                            Spacer(modifier = Modifier.width(14.dp))
+
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    Text(
+                                                        text = route.formattedDuration(),
+                                                        style = MaterialTheme.typography.headlineSmall,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = MaterialTheme.colorScheme.primary
+                                                    )
+                                                    Spacer(modifier = Modifier.width(8.dp))
+                                                    Surface(
+                                                        shape = RoundedCornerShape(8.dp),
+                                                        color = MaterialTheme.colorScheme.tertiaryContainer
+                                                    ) {
+                                                        Text(
+                                                            text = route.formattedDistance(),
+                                                            style = MaterialTheme.typography.labelMedium,
+                                                            fontWeight = FontWeight.Bold,
+                                                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                                        )
+                                                    }
+                                                }
+                                                Text(
+                                                    text = "${route.originName} → ${route.destinationName}",
+                                                    style = MaterialTheme.typography.bodyMedium,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                    modifier = Modifier.padding(top = 2.dp)
+                                                )
+                                            }
+
+                                            IconButton(onClick = { viewModel.clearRoute() }) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Close,
+                                                    contentDescription = "Clear Route",
+                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
                                         }
 
-                                        IconButton(onClick = { viewModel.clearRoute() }) {
+                                        Spacer(modifier = Modifier.height(16.dp))
+
+                                        // Prominent M3 Button: Start Navigation
+                                        Button(
+                                            onClick = {
+                                                // Prominent Navigation action
+                                            },
+                                            shape = CircleShape,
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = MaterialTheme.colorScheme.primary,
+                                                contentColor = MaterialTheme.colorScheme.onPrimary
+                                            ),
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
                                             Icon(
-                                                imageVector = Icons.Default.Close,
-                                                contentDescription = "Clear Route",
-                                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                                imageVector = Icons.Default.Navigation,
+                                                contentDescription = "Start Navigation",
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = "Start Navigation",
+                                                style = MaterialTheme.typography.titleSmall,
+                                                fontWeight = FontWeight.Bold
                                             )
                                         }
                                     }
@@ -876,36 +878,36 @@ fun MapScreen(
                     }
 
                     uiState.selectedPinLocation != null -> {
-                        // Selected Search Place Pin Sheet
+                        // Material 3 Selected Search Place Pin Sheet
                         uiState.selectedPinLocation?.let { selected ->
                             Surface(
-                                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 20.dp, bottomEnd = 20.dp),
-                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.98f),
-                                tonalElevation = 10.dp,
-                                shadowElevation = 12.dp,
+                                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 24.dp, bottomEnd = 24.dp),
+                                color = MaterialTheme.colorScheme.surfaceVariant,
+                                tonalElevation = 8.dp,
+                                shadowElevation = 10.dp,
                                 modifier = Modifier
                                     .padding(horizontal = 16.dp)
                                     .fillMaxWidth()
                                     .border(
                                         width = 1.dp,
-                                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
-                                        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 20.dp, bottomEnd = 20.dp)
+                                        color = MaterialTheme.colorScheme.outlineVariant,
+                                        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
                                     )
                             ) {
                                 Column(
-                                    modifier = Modifier.padding(18.dp),
+                                    modifier = Modifier.padding(20.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     // Top drag handle
                                     Surface(
                                         shape = CircleShape,
-                                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
                                         modifier = Modifier
                                             .width(36.dp)
                                             .height(4.dp)
                                     ) {}
 
-                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Spacer(modifier = Modifier.height(14.dp))
 
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
@@ -973,7 +975,7 @@ fun MapScreen(
                                         }
                                     }
 
-                                    Spacer(modifier = Modifier.height(14.dp))
+                                    Spacer(modifier = Modifier.height(16.dp))
 
                                     // Action Button: Calculate Route to this Place
                                     Button(
@@ -981,10 +983,10 @@ fun MapScreen(
                                             viewModel.startRoutePlanning()
                                             viewModel.selectDestination(selected)
                                         },
-                                        shape = RoundedCornerShape(16.dp),
+                                        shape = CircleShape,
                                         colors = ButtonDefaults.buttonColors(
-                                            containerColor = MaterialTheme.colorScheme.secondary,
-                                            contentColor = MaterialTheme.colorScheme.onSecondary
+                                            containerColor = MaterialTheme.colorScheme.primary,
+                                            contentColor = MaterialTheme.colorScheme.onPrimary
                                         ),
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
@@ -1007,17 +1009,17 @@ fun MapScreen(
                 }
             }
 
-            // Map Attribution Footer (Bottom Left)
+            // Material 3 Map Attribution Footer (Bottom Left)
             Surface(
                 shape = RoundedCornerShape(10.dp),
-                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .navigationBarsPadding()
                     .padding(start = 12.dp, bottom = 8.dp)
                     .border(
                         width = 0.5.dp,
-                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
+                        color = MaterialTheme.colorScheme.outlineVariant,
                         shape = RoundedCornerShape(10.dp)
                     )
             ) {
@@ -1038,17 +1040,17 @@ fun SettingsSheet(
     viewModel: MapViewModel
 ) {
     Surface(
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 20.dp, bottomEnd = 20.dp),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.98f),
-        tonalElevation = 12.dp,
-        shadowElevation = 16.dp,
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 24.dp, bottomEnd = 24.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        tonalElevation = 8.dp,
+        shadowElevation = 10.dp,
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .fillMaxWidth()
             .border(
                 width = 1.dp,
-                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
-                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 20.dp, bottomEnd = 20.dp)
+                color = MaterialTheme.colorScheme.outlineVariant,
+                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
             )
     ) {
         Column(
@@ -1061,7 +1063,7 @@ fun SettingsSheet(
             ) {
                 Surface(
                     shape = CircleShape,
-                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
                     modifier = Modifier
                         .width(36.dp)
                         .height(4.dp)
@@ -1111,7 +1113,7 @@ fun SettingsSheet(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Section 1: Theme Mode (System / Light / Dark)
+            // Section 1: Material 3 Segmented Theme Mode Selector
             Text(
                 text = "THEME MODE",
                 style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp),
@@ -1128,12 +1130,17 @@ fun SettingsSheet(
                 AppThemeMode.entries.forEach { mode ->
                     val isSelected = uiState.themeMode == mode
                     Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                        shape = CircleShape,
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(CircleShape)
                             .clickable { viewModel.setThemeMode(mode) }
+                            .border(
+                                width = if (isSelected) 0.dp else 1.dp,
+                                color = MaterialTheme.colorScheme.outlineVariant,
+                                shape = CircleShape
+                            )
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -1165,7 +1172,7 @@ fun SettingsSheet(
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            // Section 2: Color Palettes (6 Custom Palettes)
+            // Section 2: Material 3 Color Palettes (6 Custom Palettes)
             Text(
                 text = "ACCENT COLOR PALETTE",
                 style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp),
@@ -1216,15 +1223,15 @@ fun PaletteChoiceCard(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        shape = RoundedCornerShape(14.dp),
-        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+        shape = RoundedCornerShape(16.dp),
+        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
         modifier = modifier
-            .clip(RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(16.dp))
             .clickable { onSelect() }
             .border(
-                width = if (isSelected) 1.5.dp else 0.dp,
-                color = if (isSelected) MaterialTheme.colorScheme.secondary else Color.Transparent,
-                shape = RoundedCornerShape(14.dp)
+                width = if (isSelected) 1.5.dp else 1.dp,
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                shape = RoundedCornerShape(16.dp)
             )
     ) {
         Row(
@@ -1269,20 +1276,20 @@ fun SearchResultItem(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(14.dp))
             .clickable { onClick() }
             .padding(vertical = 10.dp, horizontal = 8.dp)
     ) {
         Surface(
             shape = CircleShape,
-            color = MaterialTheme.colorScheme.surfaceVariant,
+            color = MaterialTheme.colorScheme.primaryContainer,
             modifier = Modifier.size(38.dp)
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
                     imageVector = Icons.Default.LocationOn,
                     contentDescription = "Location",
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -1303,12 +1310,12 @@ fun SearchResultItem(
                     Spacer(modifier = Modifier.width(6.dp))
                     Surface(
                         shape = RoundedCornerShape(6.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer
+                        color = MaterialTheme.colorScheme.secondaryContainer
                     ) {
                         Text(
                             text = cat,
                             style = MaterialTheme.typography.labelMedium.copy(fontSize = 10.sp),
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                         )
                     }

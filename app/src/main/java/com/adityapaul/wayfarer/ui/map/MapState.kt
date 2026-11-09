@@ -50,6 +50,6 @@ data class MapState(
     val routeState: RouteState = RouteState(),
     val selectedPinLocation: SearchResult? = null,
     val themeMode: AppThemeMode = AppThemeMode.SYSTEM,
-    val colorPalette: AppColorPalette = AppColorPalette.SLATE_BLUE,
+    val colorPalette: AppColorPalette = AppColorPalette.LAVENDER_PURPLE,
     val isSettingsOpen: Boolean = false
 )
