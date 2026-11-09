@@ -39,7 +39,6 @@ import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Layers
-import androidx.compose.material.icons.filled.LocationCity
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Navigation
@@ -683,32 +682,6 @@ fun MapScreen(
                     }
                 }
 
-                // Recenter City Kolkata Button
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
-                    tonalElevation = 6.dp,
-                    shadowElevation = 8.dp,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
-                            shape = CircleShape
-                        )
-                ) {
-                    IconButton(
-                        onClick = { viewModel.recenterToKolkata() },
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.LocationCity,
-                            contentDescription = "Recenter Kolkata",
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-
                 // Map Style Switcher Pod
                 Surface(
                     shape = CircleShape,
@@ -741,7 +714,7 @@ fun MapScreen(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .navigationBarsPadding()
-                    .padding(bottom = 8.dp)
+                    .padding(bottom = 38.dp)
             ) {
                 if (routeState.isCalculatingRoute || routeState.activeRoute != null) {
                     // Active Route Summary Sheet
