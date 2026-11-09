@@ -3,6 +3,8 @@ package com.adityapaul.wayfarer.ui.map
 import android.location.Location
 import com.adityapaul.wayfarer.data.route.RouteResult
 import com.adityapaul.wayfarer.data.search.SearchResult
+import com.adityapaul.wayfarer.ui.theme.AppColorPalette
+import com.adityapaul.wayfarer.ui.theme.AppThemeMode
 
 enum class MapStyleType(val displayName: String, val url: String) {
     LIGHT("Light", "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"),
@@ -46,5 +48,8 @@ data class MapState(
     val userMessage: String? = null,
     val searchState: SearchState = SearchState(),
     val routeState: RouteState = RouteState(),
-    val selectedPinLocation: SearchResult? = null
+    val selectedPinLocation: SearchResult? = null,
+    val themeMode: AppThemeMode = AppThemeMode.SYSTEM,
+    val colorPalette: AppColorPalette = AppColorPalette.SLATE_BLUE,
+    val isSettingsOpen: Boolean = false
 )

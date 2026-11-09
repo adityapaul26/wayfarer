@@ -11,6 +11,8 @@ import com.adityapaul.wayfarer.data.route.RouteRepository
 import com.adityapaul.wayfarer.data.search.GeocodingRepository
 import com.adityapaul.wayfarer.data.search.NominatimGeocodingRepository
 import com.adityapaul.wayfarer.data.search.SearchResult
+import com.adityapaul.wayfarer.ui.theme.AppColorPalette
+import com.adityapaul.wayfarer.ui.theme.AppThemeMode
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -436,6 +438,32 @@ class MapViewModel(
 
     fun dismissUserMessage() {
         _uiState.update { it.copy(userMessage = null) }
+    }
+
+    fun toggleSettings() {
+        _uiState.update { currentState ->
+            currentState.copy(isSettingsOpen = !currentState.isSettingsOpen)
+        }
+    }
+
+    fun setThemeMode(themeMode: AppThemeMode) {
+        _uiState.update { currentState ->
+            val correspondingStyle = when (themeMode) {
+                AppThemeMode.DARK -> MapStyleType.DARK
+                AppThemeMode.LIGHT -> MapStyleType.LIGHT
+                AppThemeMode.SYSTEM -> currentState.styleType
+            }
+            currentState.copy(
+                themeMode = themeMode,
+                styleType = correspondingStyle
+            )
+        }
+    }
+
+    fun setColorPalette(palette: AppColorPalette) {
+        _uiState.update { currentState ->
+            currentState.copy(colorPalette = palette)
+        }
     }
 
     override fun onCleared() {
