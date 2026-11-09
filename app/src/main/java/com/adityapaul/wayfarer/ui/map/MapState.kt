@@ -1,6 +1,7 @@
 package com.adityapaul.wayfarer.ui.map
 
 import android.location.Location
+import com.adityapaul.wayfarer.data.route.RouteResult
 import com.adityapaul.wayfarer.data.search.SearchResult
 
 enum class MapStyleType(val displayName: String, val url: String) {
@@ -8,6 +9,21 @@ enum class MapStyleType(val displayName: String, val url: String) {
     DARK("Dark", "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"),
     LIBRE("Libre", "https://demotiles.maplibre.org/style.json")
 }
+
+enum class RouteSelectionStep {
+    NONE,           // Normal map mode
+    SELECT_ORIGIN,  // Selecting starting location
+    SELECT_DEST     // Selecting destination location
+}
+
+data class RouteState(
+    val step: RouteSelectionStep = RouteSelectionStep.NONE,
+    val origin: SearchResult? = null,
+    val destination: SearchResult? = null,
+    val isCalculatingRoute: Boolean = false,
+    val activeRoute: RouteResult? = null,
+    val routeError: String? = null
+)
 
 data class SearchState(
     val query: String = "",
@@ -29,5 +45,6 @@ data class MapState(
     val isGpsEnabled: Boolean = true,
     val userMessage: String? = null,
     val searchState: SearchState = SearchState(),
+    val routeState: RouteState = RouteState(),
     val selectedPinLocation: SearchResult? = null
 )

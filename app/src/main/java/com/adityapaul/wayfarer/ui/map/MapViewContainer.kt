@@ -19,9 +19,12 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.adityapaul.wayfarer.data.location.hasLocationPermission
 import org.maplibre.android.annotations.Marker
 import org.maplibre.android.annotations.MarkerOptions
+import org.maplibre.android.annotations.Polyline
+import org.maplibre.android.annotations.PolylineOptions
 import org.maplibre.android.camera.CameraPosition
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
+import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.location.LocationComponentActivationOptions
 import org.maplibre.android.location.LocationComponentOptions
 import org.maplibre.android.location.modes.CameraMode
@@ -43,6 +46,7 @@ fun MapViewContainer(
     var mapLibreMap by remember { mutableStateOf<MapLibreMap?>(null) }
     var currentStyleUrl by remember { mutableStateOf<String?>(null) }
     var searchMarker by remember { mutableStateOf<Marker?>(null) }
+    var currentPolyline by remember { mutableStateOf<Polyline?>(null) }
 
     val mapView = remember {
         MapView(context).apply {
@@ -145,6 +149,34 @@ fun MapViewContainer(
         val newMarker = map.addMarker(markerOptions)
         searchMarker = newMarker
         newMarker.let { map.selectMarker(it) }
+    }
+
+    // Handle polyline route geometry rendering on map
+    LaunchedEffect(mapState.routeState.activeRoute) {
+        val map = mapLibreMap ?: return@LaunchedEffect
+        currentPolyline?.let { map.removePolyline(it) }
+        currentPolyline = null
+
+        val activeRoute = mapState.routeState.activeRoute ?: return@LaunchedEffect
+        if (activeRoute.points.isNotEmpty()) {
+            val polylineOptions = PolylineOptions()
+                .addAll(activeRoute.points)
+                .color(android.graphics.Color.parseColor("#2563EB"))
+                .width(6f)
+
+            currentPolyline = map.addPolyline(polylineOptions)
+
+            if (activeRoute.points.size > 1) {
+                try {
+                    val boundsBuilder = LatLngBounds.Builder()
+                    activeRoute.points.forEach { boundsBuilder.include(it) }
+                    val bounds = boundsBuilder.build()
+                    map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 120), 600)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
     }
 
     // Handle programmatic camera moves (zoom in, zoom out, recenter)

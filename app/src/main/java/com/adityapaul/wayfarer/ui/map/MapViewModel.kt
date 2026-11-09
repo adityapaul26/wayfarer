@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.adityapaul.wayfarer.data.location.DefaultLocationClient
 import com.adityapaul.wayfarer.data.location.LocationClient
 import com.adityapaul.wayfarer.data.location.hasLocationPermission
+import com.adityapaul.wayfarer.data.route.OsrmRouteRepository
+import com.adityapaul.wayfarer.data.route.RouteRepository
 import com.adityapaul.wayfarer.data.search.GeocodingRepository
 import com.adityapaul.wayfarer.data.search.NominatimGeocodingRepository
 import com.adityapaul.wayfarer.data.search.SearchResult
@@ -18,9 +20,11 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 class MapViewModel(
-    private val geocodingRepository: GeocodingRepository = NominatimGeocodingRepository()
+    private val geocodingRepository: GeocodingRepository = NominatimGeocodingRepository(),
+    private val routeRepository: RouteRepository = OsrmRouteRepository()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MapState())
@@ -29,6 +33,7 @@ class MapViewModel(
     private var locationClient: LocationClient? = null
     private var locationJob: Job? = null
     private var searchJob: Job? = null
+    private var routeJob: Job? = null
 
     fun checkAndStartLocation(context: Context) {
         val hasPermission = hasLocationPermission(context)
@@ -224,15 +229,148 @@ class MapViewModel(
     }
 
     fun onSearchResultSelected(result: SearchResult) {
+        val currentRouteStep = _uiState.value.routeState.step
+        when (currentRouteStep) {
+            RouteSelectionStep.SELECT_ORIGIN -> {
+                selectOrigin(result)
+            }
+            RouteSelectionStep.SELECT_DEST -> {
+                selectDestination(result)
+            }
+            RouteSelectionStep.NONE -> {
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        latitude = result.latitude,
+                        longitude = result.longitude,
+                        zoom = 15.0,
+                        selectedPinLocation = result,
+                        searchState = currentState.searchState.copy(
+                            isExpanded = false
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    fun startRoutePlanning() {
         _uiState.update { currentState ->
             currentState.copy(
-                latitude = result.latitude,
-                longitude = result.longitude,
-                zoom = 15.0,
-                selectedPinLocation = result,
-                searchState = currentState.searchState.copy(
-                    isExpanded = false
+                selectedPinLocation = null,
+                searchState = SearchState(),
+                routeState = RouteState(step = RouteSelectionStep.SELECT_ORIGIN)
+            )
+        }
+    }
+
+    fun selectOrigin(origin: SearchResult) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                routeState = currentState.routeState.copy(
+                    origin = origin,
+                    step = RouteSelectionStep.SELECT_DEST
+                ),
+                searchState = SearchState() // clear search query for destination typing
+            )
+        }
+    }
+
+    fun selectOriginFromCurrentLocation() {
+        val loc = _uiState.value.userLocation
+        if (loc != null) {
+            val currentLocResult = SearchResult(
+                id = -100L,
+                name = "My Location",
+                address = "${String.format(Locale.US, "%.4f", loc.latitude)}, ${String.format(Locale.US, "%.4f", loc.longitude)}",
+                category = "Current Location",
+                latitude = loc.latitude,
+                longitude = loc.longitude
+            )
+            selectOrigin(currentLocResult)
+        } else {
+            _uiState.update { it.copy(userMessage = "Current GPS location not available") }
+        }
+    }
+
+    fun selectDestination(destination: SearchResult) {
+        val origin = _uiState.value.routeState.origin
+        _uiState.update { currentState ->
+            currentState.copy(
+                routeState = currentState.routeState.copy(
+                    destination = destination,
+                    step = RouteSelectionStep.NONE
+                ),
+                searchState = SearchState()
+            )
+        }
+
+        if (origin != null) {
+            calculateRoute(origin, destination)
+        }
+    }
+
+    private fun calculateRoute(origin: SearchResult, destination: SearchResult) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                routeState = currentState.routeState.copy(
+                    isCalculatingRoute = true,
+                    routeError = null,
+                    activeRoute = null
                 )
+            )
+        }
+
+        routeJob?.cancel()
+        routeJob = viewModelScope.launch {
+            val result = routeRepository.calculateRoute(
+                originName = origin.name,
+                originLat = origin.latitude,
+                originLng = origin.longitude,
+                destinationName = destination.name,
+                destLat = destination.latitude,
+                destLng = destination.longitude
+            )
+
+            result.onSuccess { routeResult ->
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        routeState = currentState.routeState.copy(
+                            isCalculatingRoute = false,
+                            activeRoute = routeResult,
+                            routeError = null
+                        )
+                    )
+                }
+            }.onFailure { exception ->
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        routeState = currentState.routeState.copy(
+                            isCalculatingRoute = false,
+                            activeRoute = null,
+                            routeError = exception.message ?: "Failed to calculate route."
+                        ),
+                        userMessage = exception.message ?: "Failed to calculate route."
+                    )
+                }
+            }
+        }
+    }
+
+    fun cancelRoutePlanning() {
+        routeJob?.cancel()
+        _uiState.update { currentState ->
+            currentState.copy(
+                routeState = RouteState(),
+                searchState = SearchState()
+            )
+        }
+    }
+
+    fun clearRoute() {
+        routeJob?.cancel()
+        _uiState.update { currentState ->
+            currentState.copy(
+                routeState = RouteState()
             )
         }
     }
@@ -260,5 +398,6 @@ class MapViewModel(
         super.onCleared()
         stopLocationUpdates()
         searchJob?.cancel()
+        routeJob?.cancel()
     }
 }

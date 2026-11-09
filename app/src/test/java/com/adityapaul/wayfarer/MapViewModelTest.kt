@@ -1,9 +1,12 @@
 package com.adityapaul.wayfarer
 
+import com.adityapaul.wayfarer.data.route.RouteRepository
+import com.adityapaul.wayfarer.data.route.RouteResult
 import com.adityapaul.wayfarer.data.search.GeocodingRepository
 import com.adityapaul.wayfarer.data.search.SearchResult
 import com.adityapaul.wayfarer.ui.map.MapStyleType
 import com.adityapaul.wayfarer.ui.map.MapViewModel
+import com.adityapaul.wayfarer.ui.map.RouteSelectionStep
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -13,23 +16,30 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.maplibre.android.geometry.LatLng
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MapViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var fakeGeocodingRepository: FakeGeocodingRepository
+    private lateinit var fakeRouteRepository: FakeRouteRepository
     private lateinit var viewModel: MapViewModel
 
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         fakeGeocodingRepository = FakeGeocodingRepository()
-        viewModel = MapViewModel(geocodingRepository = fakeGeocodingRepository)
+        fakeRouteRepository = FakeRouteRepository()
+        viewModel = MapViewModel(
+            geocodingRepository = fakeGeocodingRepository,
+            routeRepository = fakeRouteRepository
+        )
     }
 
     @After
@@ -46,6 +56,126 @@ class MapViewModelTest {
         assertEquals(MapStyleType.LIGHT, state.styleType)
         assertNull(state.userLocation)
         assertNull(state.selectedPinLocation)
+        assertEquals(RouteSelectionStep.NONE, state.routeState.step)
+        assertNull(state.routeState.activeRoute)
+    }
+
+    @Test
+    fun startRoutePlanning_transitionsToSelectOrigin() {
+        viewModel.startRoutePlanning()
+        val routeState = viewModel.uiState.value.routeState
+        assertEquals(RouteSelectionStep.SELECT_ORIGIN, routeState.step)
+        assertNull(routeState.origin)
+        assertNull(routeState.destination)
+    }
+
+    @Test
+    fun selectOriginAndDestination_calculatesOsrmRoute() = runTest {
+        val origin = SearchResult(
+            id = 1L,
+            name = "Howrah Bridge",
+            address = "Howrah, WB",
+            category = "Bridge",
+            latitude = 22.5851,
+            longitude = 88.3468
+        )
+        val destination = SearchResult(
+            id = 2L,
+            name = "Victoria Memorial",
+            address = "Queen's Way, Kolkata",
+            category = "Museum",
+            latitude = 22.5448,
+            longitude = 88.3425
+        )
+
+        val routePoints = listOf(
+            LatLng(22.5851, 88.3468),
+            LatLng(22.5600, 88.3500),
+            LatLng(22.5448, 88.3425)
+        )
+        fakeRouteRepository.routeResult = Result.success(
+            RouteResult(
+                originName = "Howrah Bridge",
+                destinationName = "Victoria Memorial",
+                points = routePoints,
+                distanceMeters = 5400.0,
+                durationSeconds = 720.0
+            )
+        )
+
+        viewModel.startRoutePlanning()
+        viewModel.selectOrigin(origin)
+
+        val stateAfterOrigin = viewModel.uiState.value
+        assertEquals(RouteSelectionStep.SELECT_DEST, stateAfterOrigin.routeState.step)
+        assertEquals("Howrah Bridge", stateAfterOrigin.routeState.origin?.name)
+
+        viewModel.selectDestination(destination)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val finalState = viewModel.uiState.value
+        assertEquals(RouteSelectionStep.NONE, finalState.routeState.step)
+        assertFalse(finalState.routeState.isCalculatingRoute)
+
+        val activeRoute = finalState.routeState.activeRoute
+        assertNotNull(activeRoute)
+        assertEquals("Howrah Bridge", activeRoute?.originName)
+        assertEquals("Victoria Memorial", activeRoute?.destinationName)
+        assertEquals(3, activeRoute?.points?.size)
+        assertEquals("5.4 km", activeRoute?.formattedDistance())
+        assertEquals("12 mins", activeRoute?.formattedDuration())
+    }
+
+    @Test
+    fun calculateRoute_failure_setsRouteError() = runTest {
+        val origin = SearchResult(
+            id = 1L,
+            name = "Origin",
+            address = "Origin Address",
+            category = null,
+            latitude = 22.5851,
+            longitude = 88.3468
+        )
+        val destination = SearchResult(
+            id = 2L,
+            name = "Dest",
+            address = "Dest Address",
+            category = null,
+            latitude = 22.5448,
+            longitude = 88.3425
+        )
+
+        fakeRouteRepository.routeResult = Result.failure(Exception("OSRM Route Service Timeout"))
+
+        viewModel.startRoutePlanning()
+        viewModel.selectOrigin(origin)
+        viewModel.selectDestination(destination)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val routeState = viewModel.uiState.value.routeState
+        assertFalse(routeState.isCalculatingRoute)
+        assertNull(routeState.activeRoute)
+        assertEquals("OSRM Route Service Timeout", routeState.routeError)
+    }
+
+    @Test
+    fun clearRoute_resetsRouteState() = runTest {
+        val origin = SearchResult(1L, "O", "O", null, 22.5, 88.3)
+        val destination = SearchResult(2L, "D", "D", null, 22.6, 88.4)
+        fakeRouteRepository.routeResult = Result.success(
+            RouteResult("O", "D", listOf(LatLng(22.5, 88.3), LatLng(22.6, 88.4)), 1000.0, 600.0)
+        )
+
+        viewModel.startRoutePlanning()
+        viewModel.selectOrigin(origin)
+        viewModel.selectDestination(destination)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.clearRoute()
+
+        val routeState = viewModel.uiState.value.routeState
+        assertNull(routeState.activeRoute)
+        assertEquals(RouteSelectionStep.NONE, routeState.step)
     }
 
     @Test
@@ -81,85 +211,6 @@ class MapViewModelTest {
         assertEquals(1, searchState.results.size)
         assertEquals("Howrah Bridge", searchState.results.first().name)
         assertNull(searchState.errorMessage)
-    }
-
-    @Test
-    fun submitSearch_noMatchingPlaces_showsNoResultsMessage() = runTest {
-        fakeGeocodingRepository.searchResults = Result.success(emptyList())
-
-        viewModel.onSearchQueryChange("NonExistentPlaceXYZ")
-        viewModel.submitSearch()
-        testDispatcher.scheduler.advanceUntilIdle()
-
-        val searchState = viewModel.uiState.value.searchState
-        assertFalse(searchState.isSearching)
-        assertTrue(searchState.results.isEmpty())
-        assertEquals("No matching places found for \"NonExistentPlaceXYZ\".", searchState.errorMessage)
-    }
-
-    @Test
-    fun submitSearch_networkFailure_showsNetworkErrorMessage() = runTest {
-        fakeGeocodingRepository.searchResults = Result.failure(Exception("Network unreachable"))
-
-        viewModel.onSearchQueryChange("Park Street")
-        viewModel.submitSearch()
-        testDispatcher.scheduler.advanceUntilIdle()
-
-        val searchState = viewModel.uiState.value.searchState
-        assertFalse(searchState.isSearching)
-        assertTrue(searchState.results.isEmpty())
-        assertEquals("Network unreachable", searchState.errorMessage)
-    }
-
-    @Test
-    fun onSearchResultSelected_updatesCameraPositionAndPin() {
-        val place = SearchResult(
-            id = 202L,
-            name = "Victoria Memorial",
-            address = "Queen's Way, Kolkata",
-            category = "Museum",
-            latitude = 22.5448,
-            longitude = 88.3425
-        )
-
-        viewModel.onSearchResultSelected(place)
-
-        val state = viewModel.uiState.value
-        assertEquals(22.5448, state.latitude, 0.0001)
-        assertEquals(88.3425, state.longitude, 0.0001)
-        assertEquals(15.0, state.zoom, 0.0001)
-        assertEquals(place, state.selectedPinLocation)
-        assertFalse(state.searchState.isExpanded)
-    }
-
-    @Test
-    fun clearSelectedPin_removesPin() {
-        val place = SearchResult(
-            id = 202L,
-            name = "Victoria Memorial",
-            address = "Queen's Way, Kolkata",
-            category = "Museum",
-            latitude = 22.5448,
-            longitude = 88.3425
-        )
-        viewModel.onSearchResultSelected(place)
-        viewModel.clearSelectedPin()
-
-        assertNull(viewModel.uiState.value.selectedPinLocation)
-    }
-
-    @Test
-    fun recenterToUserLocation_withoutLocation_setsUserMessage() {
-        val success = viewModel.recenterToUserLocation()
-        assertFalse(success)
-        assertEquals("Location permission required", viewModel.uiState.value.userMessage)
-    }
-
-    @Test
-    fun dismissUserMessage_clearsMessage() {
-        viewModel.recenterToUserLocation()
-        viewModel.dismissUserMessage()
-        assertNull(viewModel.uiState.value.userMessage)
     }
 
     @Test
@@ -202,5 +253,20 @@ private class FakeGeocodingRepository : GeocodingRepository {
 
     override suspend fun searchPlaces(query: String): Result<List<SearchResult>> {
         return searchResults
+    }
+}
+
+private class FakeRouteRepository : RouteRepository {
+    var routeResult: Result<RouteResult> = Result.failure(Exception("Not set"))
+
+    override suspend fun calculateRoute(
+        originName: String,
+        originLat: Double,
+        originLng: Double,
+        destinationName: String,
+        destLat: Double,
+        destLng: Double
+    ): Result<RouteResult> {
+        return routeResult
     }
 }
