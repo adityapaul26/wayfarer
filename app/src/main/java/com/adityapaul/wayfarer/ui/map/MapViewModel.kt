@@ -1,11 +1,13 @@
 package com.adityapaul.wayfarer.ui.map
 
 import android.content.Context
+import android.location.Location
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.adityapaul.wayfarer.data.location.DefaultLocationClient
 import com.adityapaul.wayfarer.data.location.LocationClient
 import com.adityapaul.wayfarer.data.location.hasLocationPermission
+import com.adityapaul.wayfarer.data.route.NavigationUtils
 import com.adityapaul.wayfarer.data.route.OsrmRouteRepository
 import com.adityapaul.wayfarer.data.route.RouteRepository
 import com.adityapaul.wayfarer.data.search.GeocodingRepository
@@ -15,6 +17,7 @@ import com.adityapaul.wayfarer.data.search.SearchResult
 import com.adityapaul.wayfarer.data.search.SharedPreferencesRecentSearchRepository
 import com.adityapaul.wayfarer.ui.theme.AppColorPalette
 import com.adityapaul.wayfarer.ui.theme.AppThemeMode
+import org.maplibre.android.geometry.LatLng
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -78,9 +81,13 @@ class MapViewModel(
             }
             .onEach { location ->
                 _uiState.update { currentState ->
+                    val updatedNavState = processNavigationProgress(location, currentState)
                     currentState.copy(
                         userLocation = location,
-                        isGpsEnabled = true
+                        isGpsEnabled = true,
+                        routeState = currentState.routeState.copy(
+                            navigationState = updatedNavState
+                        )
                     )
                 }
             }
@@ -491,6 +498,91 @@ class MapViewModel(
             currentState.copy(
                 routeState = RouteState(),
                 searchState = resetSearchQueryState(currentState)
+            )
+        }
+    }
+
+    private var offRouteCount = 0
+
+    private fun processNavigationProgress(location: Location, currentState: MapState): LiveNavigationState {
+        val navState = currentState.routeState.navigationState
+        if (!navState.isNavigating) return navState
+        val activeRoute = currentState.routeState.activeRoute ?: return navState
+
+        val userLatLng = LatLng(location.latitude, location.longitude)
+        val snapResult = NavigationUtils.snapToPolyline(userLatLng, activeRoute.points) ?: return navState
+
+        if (snapResult.distanceToPolylineMeters > 35.0f) {
+            offRouteCount++
+            if (offRouteCount >= 2) {
+                offRouteCount = 0
+                val currentDest = currentState.routeState.destination
+                if (currentDest != null) {
+                    val currentLocSearchResult = SearchResult(
+                        id = -100L,
+                        name = "Current Location",
+                        address = "${location.latitude}, ${location.longitude}",
+                        category = "GPS",
+                        latitude = location.latitude,
+                        longitude = location.longitude
+                    )
+                    calculateRoute(currentLocSearchResult, currentDest)
+                }
+                return navState.copy(isOffRoute = true)
+            }
+        } else {
+            offRouteCount = 0
+        }
+
+        val (traveled, remaining) = NavigationUtils.splitPolyline(snapResult, activeRoute.points)
+        val remainingDist = NavigationUtils.calculatePathDistance(remaining)
+
+        val totalDist = activeRoute.distanceMeters.coerceAtLeast(1.0)
+        val distRatio = (remainingDist / totalDist).coerceIn(0.0, 1.0)
+        val remainingDur = activeRoute.durationSeconds * distRatio
+
+        return navState.copy(
+            snappedLocation = snapResult.snappedPoint,
+            traveledPoints = traveled,
+            remainingPoints = remaining,
+            remainingDistanceMeters = remainingDist,
+            remainingDurationSeconds = remainingDur,
+            isOffRoute = false
+        )
+    }
+
+    fun startLiveNavigation() {
+        val activeRoute = _uiState.value.routeState.activeRoute ?: return
+        val userLoc = _uiState.value.userLocation
+
+        val initialSnap = if (userLoc != null) {
+            LatLng(userLoc.latitude, userLoc.longitude)
+        } else {
+            activeRoute.points.firstOrNull()
+        }
+
+        _uiState.update { currentState ->
+            currentState.copy(
+                routeState = currentState.routeState.copy(
+                    navigationState = LiveNavigationState(
+                        isNavigating = true,
+                        snappedLocation = initialSnap,
+                        remainingPoints = activeRoute.points,
+                        traveledPoints = emptyList(),
+                        remainingDistanceMeters = activeRoute.distanceMeters,
+                        remainingDurationSeconds = activeRoute.durationSeconds
+                    )
+                )
+            )
+        }
+    }
+
+    fun stopLiveNavigation() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                routeState = currentState.routeState.copy(
+                    navigationState = LiveNavigationState()
+                )
             )
         }
     }

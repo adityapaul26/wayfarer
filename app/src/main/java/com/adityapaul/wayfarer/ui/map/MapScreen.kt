@@ -878,11 +878,22 @@ fun MapScreen(
 
                                             Column(modifier = Modifier.weight(1f)) {
                                                 Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    val displayDuration = if (routeState.navigationState.isNavigating) {
+                                                        routeState.navigationState.formattedRemainingDuration()
+                                                    } else {
+                                                        route.formattedDuration()
+                                                    }
+                                                    val displayDistance = if (routeState.navigationState.isNavigating) {
+                                                        routeState.navigationState.formattedRemainingDistance()
+                                                    } else {
+                                                        route.formattedDistance()
+                                                    }
+
                                                     Text(
-                                                        text = route.formattedDuration(),
+                                                        text = displayDuration,
                                                         style = MaterialTheme.typography.headlineSmall,
                                                         fontWeight = FontWeight.Bold,
-                                                        color = MaterialTheme.colorScheme.primary
+                                                        color = if (routeState.navigationState.isNavigating) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
                                                     )
                                                     Spacer(modifier = Modifier.width(8.dp))
                                                     Surface(
@@ -890,7 +901,7 @@ fun MapScreen(
                                                         color = MaterialTheme.colorScheme.tertiaryContainer
                                                     ) {
                                                         Text(
-                                                            text = route.formattedDistance(),
+                                                            text = displayDistance,
                                                             style = MaterialTheme.typography.labelMedium,
                                                             fontWeight = FontWeight.Bold,
                                                             color = MaterialTheme.colorScheme.onTertiaryContainer,
@@ -919,26 +930,30 @@ fun MapScreen(
 
                                         Spacer(modifier = Modifier.height(16.dp))
 
-                                        // Prominent M3 Button: Start Navigation
+                                        // Prominent M3 Button: Start / Stop Live Navigation
                                         Button(
                                             onClick = {
-                                                // Prominent Navigation action
+                                                if (routeState.navigationState.isNavigating) {
+                                                    viewModel.stopLiveNavigation()
+                                                } else {
+                                                    viewModel.startLiveNavigation()
+                                                }
                                             },
                                             shape = CircleShape,
                                             colors = ButtonDefaults.buttonColors(
-                                                containerColor = MaterialTheme.colorScheme.primary,
-                                                contentColor = MaterialTheme.colorScheme.onPrimary
+                                                containerColor = if (routeState.navigationState.isNavigating) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                                                contentColor = if (routeState.navigationState.isNavigating) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onPrimary
                                             ),
                                             modifier = Modifier.fillMaxWidth()
                                         ) {
                                             Icon(
-                                                imageVector = Icons.Default.Navigation,
-                                                contentDescription = "Start Navigation",
+                                                imageVector = if (routeState.navigationState.isNavigating) Icons.Default.Close else Icons.Default.Navigation,
+                                                contentDescription = if (routeState.navigationState.isNavigating) "Stop Navigation" else "Start Navigation",
                                                 modifier = Modifier.size(20.dp)
                                             )
                                             Spacer(modifier = Modifier.width(8.dp))
                                             Text(
-                                                text = "Start Navigation",
+                                                text = if (routeState.navigationState.isNavigating) "Stop Live Navigation" else "Start Live Navigation",
                                                 style = MaterialTheme.typography.titleSmall,
                                                 fontWeight = FontWeight.Bold
                                             )

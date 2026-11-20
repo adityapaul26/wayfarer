@@ -47,6 +47,7 @@ fun MapViewContainer(
     var currentStyleUrl by remember { mutableStateOf<String?>(null) }
     var searchMarker by remember { mutableStateOf<Marker?>(null) }
     var currentPolyline by remember { mutableStateOf<Polyline?>(null) }
+    var traveledPolyline by remember { mutableStateOf<Polyline?>(null) }
 
     val mapView = remember {
         MapView(context).apply {
@@ -156,6 +157,8 @@ fun MapViewContainer(
         val map = mapLibreMap ?: return@LaunchedEffect
         currentPolyline?.let { map.removePolyline(it) }
         currentPolyline = null
+        traveledPolyline?.let { map.removePolyline(it) }
+        traveledPolyline = null
 
         val activeRoute = mapState.routeState.activeRoute ?: return@LaunchedEffect
         if (activeRoute.points.isNotEmpty()) {
@@ -175,6 +178,55 @@ fun MapViewContainer(
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
+            }
+        }
+    }
+
+    // Handle live navigation camera mode & polyline updates
+    LaunchedEffect(mapState.routeState.navigationState) {
+        val map = mapLibreMap ?: return@LaunchedEffect
+        val navState = mapState.routeState.navigationState
+
+        if (navState.isNavigating) {
+            try {
+                val locationComponent = map.locationComponent
+                if (locationComponent.isLocationComponentActivated) {
+                    locationComponent.cameraMode = CameraMode.TRACKING_GPS
+                    locationComponent.renderMode = RenderMode.COMPASS
+                }
+
+                // Render remaining polyline
+                currentPolyline?.let { map.removePolyline(it) }
+                if (navState.remainingPoints.isNotEmpty()) {
+                    val remainingOptions = PolylineOptions()
+                        .addAll(navState.remainingPoints)
+                        .color(android.graphics.Color.parseColor("#2563EB"))
+                        .width(6f)
+                    currentPolyline = map.addPolyline(remainingOptions)
+                }
+
+                // Render traveled polyline
+                traveledPolyline?.let { map.removePolyline(it) }
+                if (navState.traveledPoints.isNotEmpty()) {
+                    val traveledOptions = PolylineOptions()
+                        .addAll(navState.traveledPoints)
+                        .color(android.graphics.Color.parseColor("#94A3B8"))
+                        .width(5f)
+                    traveledPolyline = map.addPolyline(traveledOptions)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        } else {
+            try {
+                traveledPolyline?.let { map.removePolyline(it) }
+                traveledPolyline = null
+                val locationComponent = map.locationComponent
+                if (locationComponent.isLocationComponentActivated) {
+                    locationComponent.cameraMode = CameraMode.NONE
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
