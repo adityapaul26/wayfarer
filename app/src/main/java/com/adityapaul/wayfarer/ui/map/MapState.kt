@@ -31,6 +31,7 @@ data class SearchState(
     val query: String = "",
     val isSearching: Boolean = false,
     val results: List<SearchResult> = emptyList(),
+    val recentSearches: List<SearchResult> = emptyList(),
     val errorMessage: String? = null,
     val hasSearched: Boolean = false,
     val isExpanded: Boolean = false

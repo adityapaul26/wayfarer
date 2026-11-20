@@ -10,7 +10,9 @@ import com.adityapaul.wayfarer.data.route.OsrmRouteRepository
 import com.adityapaul.wayfarer.data.route.RouteRepository
 import com.adityapaul.wayfarer.data.search.GeocodingRepository
 import com.adityapaul.wayfarer.data.search.NominatimGeocodingRepository
+import com.adityapaul.wayfarer.data.search.RecentSearchRepository
 import com.adityapaul.wayfarer.data.search.SearchResult
+import com.adityapaul.wayfarer.data.search.SharedPreferencesRecentSearchRepository
 import com.adityapaul.wayfarer.ui.theme.AppColorPalette
 import com.adityapaul.wayfarer.ui.theme.AppThemeMode
 import kotlinx.coroutines.Job
@@ -207,6 +209,9 @@ class MapViewModel(
         searchJob = viewModelScope.launch {
             val result = geocodingRepository.searchPlaces(query)
             result.onSuccess { places ->
+                if (places.isNotEmpty()) {
+                    saveRecentSearch(places.first())
+                }
                 _uiState.update { currentState ->
                     currentState.copy(
                         searchState = currentState.searchState.copy(
@@ -230,7 +235,74 @@ class MapViewModel(
         }
     }
 
+    private var recentSearchRepository: RecentSearchRepository? = null
+
+    fun initRecentSearchRepository(context: Context) {
+        if (recentSearchRepository == null) {
+            val repo = SharedPreferencesRecentSearchRepository(context.applicationContext)
+            recentSearchRepository = repo
+            val list = repo.getRecentSearches()
+            _uiState.update { currentState ->
+                currentState.copy(
+                    searchState = currentState.searchState.copy(
+                        recentSearches = list
+                    )
+                )
+            }
+        }
+    }
+
+    fun saveRecentSearch(result: SearchResult) {
+        recentSearchRepository?.let { repo ->
+            val updatedList = repo.addRecentSearch(result)
+            _uiState.update { currentState ->
+                currentState.copy(
+                    searchState = currentState.searchState.copy(
+                        recentSearches = updatedList
+                    )
+                )
+            }
+        }
+    }
+
+    fun removeRecentSearch(searchResultId: Long) {
+        recentSearchRepository?.let { repo ->
+            val updatedList = repo.removeRecentSearch(searchResultId)
+            _uiState.update { currentState ->
+                currentState.copy(
+                    searchState = currentState.searchState.copy(
+                        recentSearches = updatedList
+                    )
+                )
+            }
+        }
+    }
+
+    fun clearRecentSearches() {
+        recentSearchRepository?.let { repo ->
+            val updatedList = repo.clearRecentSearches()
+            _uiState.update { currentState ->
+                currentState.copy(
+                    searchState = currentState.searchState.copy(
+                        recentSearches = updatedList
+                    )
+                )
+            }
+        }
+    }
+
+    fun expandSearchPanel() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                searchState = currentState.searchState.copy(
+                    isExpanded = true
+                )
+            )
+        }
+    }
+
     fun onSearchResultSelected(result: SearchResult) {
+        saveRecentSearch(result)
         val currentRouteStep = _uiState.value.routeState.step
         when (currentRouteStep) {
             RouteSelectionStep.SELECT_ORIGIN -> {
@@ -255,11 +327,22 @@ class MapViewModel(
         }
     }
 
+    private fun resetSearchQueryState(currentState: MapState): SearchState {
+        return currentState.searchState.copy(
+            query = "",
+            isSearching = false,
+            results = emptyList(),
+            errorMessage = null,
+            hasSearched = false,
+            isExpanded = false
+        )
+    }
+
     fun startRoutePlanning() {
         _uiState.update { currentState ->
             currentState.copy(
                 selectedPinLocation = null,
-                searchState = SearchState(),
+                searchState = resetSearchQueryState(currentState),
                 routeState = RouteState(step = RouteSelectionStep.SELECT_ORIGIN)
             )
         }
@@ -272,7 +355,7 @@ class MapViewModel(
                     origin = origin,
                     step = RouteSelectionStep.SELECT_DEST
                 ),
-                searchState = SearchState() // clear search query for destination typing
+                searchState = resetSearchQueryState(currentState)
             )
         }
     }
@@ -346,7 +429,7 @@ class MapViewModel(
                     destination = destination,
                     step = RouteSelectionStep.NONE
                 ),
-                searchState = SearchState()
+                searchState = resetSearchQueryState(currentState)
             )
         }
 
@@ -407,7 +490,7 @@ class MapViewModel(
         _uiState.update { currentState ->
             currentState.copy(
                 routeState = RouteState(),
-                searchState = SearchState()
+                searchState = resetSearchQueryState(currentState)
             )
         }
     }
@@ -425,7 +508,7 @@ class MapViewModel(
         searchJob?.cancel()
         _uiState.update { currentState ->
             currentState.copy(
-                searchState = SearchState()
+                searchState = resetSearchQueryState(currentState)
             )
         }
     }

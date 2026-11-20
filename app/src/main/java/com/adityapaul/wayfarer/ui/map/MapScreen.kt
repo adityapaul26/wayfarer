@@ -39,6 +39,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.LightMode
@@ -72,6 +73,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -80,6 +82,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -116,6 +119,7 @@ fun MapScreen(
 
     LaunchedEffect(Unit) {
         viewModel.checkAndStartLocation(context)
+        viewModel.initRecentSearchRepository(context)
     }
 
     LaunchedEffect(uiState.userMessage) {
@@ -173,7 +177,7 @@ fun MapScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                .padding(horizontal = 8.dp, vertical = 2.dp)
                         ) {
                             // M3 Brand Logo Avatar Badge
                             Surface(
@@ -217,7 +221,13 @@ fun MapScreen(
                                     focusedBorderColor = Color.Transparent,
                                     unfocusedBorderColor = Color.Transparent
                                 ),
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .onFocusChanged { focusState ->
+                                        if (focusState.isFocused) {
+                                            viewModel.expandSearchPanel()
+                                        }
+                                    }
                             )
 
                             Row(
@@ -515,15 +525,26 @@ fun MapScreen(
                                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                                     unfocusedBorderColor = MaterialTheme.colorScheme.outline
                                 ),
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .onFocusChanged { focusState ->
+                                        if (focusState.isFocused) {
+                                            viewModel.expandSearchPanel()
+                                        }
+                                    }
                             )
                         }
                     }
                 }
 
-                // Material 3 Search Results Dropdown Panel
+                // Material 3 Search Results / Recent Searches Dropdown Panel
+                val shouldShowDropdown = searchState.isSearching ||
+                        searchState.errorMessage != null ||
+                        searchState.results.isNotEmpty() ||
+                        (searchState.isExpanded && searchState.recentSearches.isNotEmpty())
+
                 AnimatedVisibility(
-                    visible = searchState.isExpanded || searchState.isSearching || searchState.errorMessage != null,
+                    visible = shouldShowDropdown,
                     enter = fadeIn() + slideInVertically(),
                     exit = fadeOut() + slideOutVertically()
                 ) {
@@ -535,7 +556,7 @@ fun MapScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 8.dp)
-                            .heightIn(max = 280.dp)
+                            .heightIn(max = 300.dp)
                             .border(
                                 width = 1.dp,
                                 color = MaterialTheme.colorScheme.outlineVariant,
@@ -605,6 +626,57 @@ fun MapScreen(
                                                     viewModel.onSearchResultSelected(result)
                                                 }
                                             )
+                                        }
+                                    }
+                                }
+
+                                searchState.recentSearches.isNotEmpty() -> {
+                                    Column(modifier = Modifier.fillMaxWidth()) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.History,
+                                                contentDescription = "Recent Searches",
+                                                tint = MaterialTheme.colorScheme.primary,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = "Recent Searches",
+                                                style = MaterialTheme.typography.titleSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.onSurface,
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                            TextButton(onClick = { viewModel.clearRecentSearches() }) {
+                                                Text(
+                                                    text = "Clear History",
+                                                    style = MaterialTheme.typography.labelMedium,
+                                                    color = MaterialTheme.colorScheme.error
+                                                )
+                                            }
+                                        }
+
+                                        LazyColumn(
+                                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            items(searchState.recentSearches) { recent ->
+                                                RecentSearchItem(
+                                                    result = recent,
+                                                    onClick = {
+                                                        keyboardController?.hide()
+                                                        viewModel.onSearchResultSelected(recent)
+                                                    },
+                                                    onRemove = {
+                                                        viewModel.removeRecentSearch(recent.id)
+                                                    }
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -1328,6 +1400,67 @@ fun SearchResultItem(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(top = 1.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun RecentSearchItem(
+    result: SearchResult,
+    onClick: () -> Unit,
+    onRemove: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .clickable { onClick() }
+            .padding(vertical = 8.dp, horizontal = 8.dp)
+    ) {
+        Surface(
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.secondaryContainer,
+            modifier = Modifier.size(36.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = Icons.Default.History,
+                    contentDescription = "Recent Search",
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = result.name,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = result.address,
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 1.dp)
+            )
+        }
+        IconButton(
+            onClick = { onRemove() },
+            modifier = Modifier.size(32.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Remove recent search",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(16.dp)
             )
         }
     }
