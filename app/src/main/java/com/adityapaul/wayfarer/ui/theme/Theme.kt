@@ -1,14 +1,18 @@
 package com.adityapaul.wayfarer.ui.theme
 
 import android.app.Activity
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
@@ -16,16 +20,22 @@ import androidx.core.view.WindowCompat
 fun WayfarerTheme(
     themeMode: AppThemeMode = AppThemeMode.SYSTEM,
     palette: AppColorPalette = AppColorPalette.LAVENDER_PURPLE,
+    useDynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
+    val context = LocalContext.current
     val darkTheme = when (themeMode) {
         AppThemeMode.SYSTEM -> isSystemInDarkTheme()
         AppThemeMode.LIGHT -> false
         AppThemeMode.DARK -> true
     }
 
-    val colorScheme = if (darkTheme) {
-        darkColorScheme(
+    val supportsDynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+
+    val colorScheme = when {
+        useDynamicColor && supportsDynamicColor && darkTheme -> dynamicDarkColorScheme(context)
+        useDynamicColor && supportsDynamicColor && !darkTheme -> dynamicLightColorScheme(context)
+        darkTheme -> darkColorScheme(
             primary = palette.primaryDark,
             onPrimary = palette.onPrimaryDark,
             primaryContainer = palette.primaryContainerDark,
@@ -47,8 +57,7 @@ fun WayfarerTheme(
             outline = Color(0xFF938F96),
             outlineVariant = Color(0xFF49454F)
         )
-    } else {
-        lightColorScheme(
+        else -> lightColorScheme(
             primary = palette.primaryLight,
             onPrimary = palette.onPrimaryLight,
             primaryContainer = palette.primaryContainerLight,

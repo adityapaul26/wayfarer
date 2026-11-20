@@ -21,7 +21,8 @@ class MainActivity : ComponentActivity() {
 
             WayfarerTheme(
                 themeMode = uiState.themeMode,
-                palette = uiState.colorPalette
+                palette = uiState.colorPalette,
+                useDynamicColor = uiState.useDynamicColor
             ) {
                 MapScreen(viewModel = viewModel)
             }

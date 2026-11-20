@@ -1,6 +1,7 @@
 package com.adityapaul.wayfarer.ui.map
 
 import android.location.Location
+import android.os.Build
 import com.adityapaul.wayfarer.data.route.RouteResult
 import com.adityapaul.wayfarer.data.search.SearchResult
 import com.adityapaul.wayfarer.ui.theme.AppColorPalette
@@ -84,5 +85,6 @@ data class MapState(
     val selectedPinLocation: SearchResult? = null,
     val themeMode: AppThemeMode = AppThemeMode.SYSTEM,
     val colorPalette: AppColorPalette = AppColorPalette.LAVENDER_PURPLE,
+    val useDynamicColor: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
     val isSettingsOpen: Boolean = false
 )

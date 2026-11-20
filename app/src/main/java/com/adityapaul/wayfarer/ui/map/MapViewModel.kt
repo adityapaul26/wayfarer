@@ -641,6 +641,12 @@ class MapViewModel(
         }
     }
 
+    fun toggleDynamicColor(enabled: Boolean) {
+        _uiState.update { currentState ->
+            currentState.copy(useDynamicColor = enabled)
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         stopLocationUpdates()
