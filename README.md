@@ -1,6 +1,6 @@
-# Wayfarer 🗺️
+# Wayfarer 🗺️ `v1.0.0`
 
-**Wayfarer** is a minimalist, modern native Android maps and navigation application built with **Jetpack Compose**, **Material 3**, and **MapLibre Native Android**. It offers interactive vector map rendering, real-time GPS location tracking, place search via Nominatim, and route calculation powered by the Open Source Routing Machine (OSRM).
+**Wayfarer** (v1.0.0) is a minimalist, modern native Android maps and navigation application built with **Jetpack Compose**, **Material 3**, and **MapLibre Native Android**. It offers interactive vector map rendering, real-time GPS location tracking, place search via Nominatim, local search history persistence, live GPS route tracking, and route calculation powered by the Open Source Routing Machine (OSRM).
 
 ---
 
