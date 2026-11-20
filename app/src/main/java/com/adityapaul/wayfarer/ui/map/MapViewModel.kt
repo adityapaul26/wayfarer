@@ -647,6 +647,36 @@ class MapViewModel(
         }
     }
 
+    fun toggleBottomSheetCollapse() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                routeState = currentState.routeState.copy(
+                    isCollapsed = !currentState.routeState.isCollapsed
+                )
+            )
+        }
+    }
+
+    fun expandBottomSheet() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                routeState = currentState.routeState.copy(
+                    isCollapsed = false
+                )
+            )
+        }
+    }
+
+    fun collapseBottomSheet() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                routeState = currentState.routeState.copy(
+                    isCollapsed = true
+                )
+            )
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         stopLocationUpdates()

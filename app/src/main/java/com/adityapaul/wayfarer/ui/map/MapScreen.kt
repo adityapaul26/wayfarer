@@ -5,6 +5,9 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -42,6 +45,8 @@ import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.LocationOn
@@ -806,160 +811,254 @@ fun MapScreen(
                     }
 
                     routeState.isCalculatingRoute || routeState.activeRoute != null -> {
-                        // Material 3 Active Route Summary Sheet
+                        // Collapsible Material 3 Active Route Summary Sheet with Spring Physics
+                        val isCollapsed = routeState.isCollapsed
+
                         Surface(
-                            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 24.dp, bottomEnd = 24.dp),
+                            shape = if (isCollapsed) CircleShape else RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 24.dp, bottomEnd = 24.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant,
                             tonalElevation = 8.dp,
                             shadowElevation = 10.dp,
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
                                 .fillMaxWidth()
+                                .animateContentSize(
+                                    animationSpec = spring(
+                                        dampingRatio = Spring.DampingRatioLowBouncy,
+                                        stiffness = Spring.StiffnessMedium
+                                    )
+                                )
                                 .border(
                                     width = 1.dp,
                                     color = MaterialTheme.colorScheme.outlineVariant,
-                                    shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
+                                    shape = if (isCollapsed) CircleShape else RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
                                 )
                         ) {
-                            Column(
-                                modifier = Modifier.padding(20.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                // Drag handle pill
-                                Surface(
-                                    shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
+                            if (isCollapsed && routeState.activeRoute != null) {
+                                // Compact Navigation Pill View (Collapsed Mode)
+                                val route = routeState.activeRoute
+                                val displayDuration = if (routeState.navigationState.isNavigating) {
+                                    routeState.navigationState.formattedRemainingDuration()
+                                } else {
+                                    route.formattedDuration()
+                                }
+                                val displayDistance = if (routeState.navigationState.isNavigating) {
+                                    routeState.navigationState.formattedRemainingDistance()
+                                } else {
+                                    route.formattedDistance()
+                                }
+
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier
-                                        .width(36.dp)
-                                        .height(4.dp)
-                                ) {}
+                                        .fillMaxWidth()
+                                        .clip(CircleShape)
+                                        .clickable { viewModel.expandBottomSheet() }
+                                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                                ) {
+                                    Surface(
+                                        shape = CircleShape,
+                                        color = if (routeState.navigationState.isNavigating) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer,
+                                        modifier = Modifier.size(36.dp)
+                                    ) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Icon(
+                                                imageVector = Icons.Default.Navigation,
+                                                contentDescription = "Navigation",
+                                                tint = if (routeState.navigationState.isNavigating) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                    }
 
-                                Spacer(modifier = Modifier.height(14.dp))
+                                    Spacer(modifier = Modifier.width(12.dp))
 
-                                if (routeState.isCalculatingRoute) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = "$displayDuration • $displayDistance",
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Text(
+                                            text = route.destinationName,
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+
+                                    IconButton(
+                                        onClick = { viewModel.expandBottomSheet() },
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.KeyboardArrowUp,
+                                            contentDescription = "Expand Route Details",
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            } else {
+                                // Full Expanded Sheet View
+                                Column(
+                                    modifier = Modifier.padding(20.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    // Interactive Drag Handle Row (Tap to collapse)
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.Center,
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(vertical = 12.dp)
+                                            .clip(CircleShape)
+                                            .clickable { viewModel.toggleBottomSheetCollapse() }
+                                            .padding(vertical = 2.dp)
                                     ) {
-                                        CircularProgressIndicator(
-                                            modifier = Modifier.size(24.dp),
-                                            strokeWidth = 2.5.dp,
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                        Spacer(modifier = Modifier.width(12.dp))
-                                        Text(
-                                            text = "Calculating OSRM route...",
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            fontWeight = FontWeight.Medium
+                                        Surface(
+                                            shape = CircleShape,
+                                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
+                                            modifier = Modifier
+                                                .width(36.dp)
+                                                .height(4.dp)
+                                        ) {}
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Icon(
+                                            imageVector = Icons.Default.KeyboardArrowDown,
+                                            contentDescription = "Collapse Route Sheet",
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                            modifier = Modifier.size(18.dp)
                                         )
                                     }
-                                } else routeState.activeRoute?.let { route ->
-                                    Column(modifier = Modifier.fillMaxWidth()) {
+
+                                    Spacer(modifier = Modifier.height(14.dp))
+
+                                    if (routeState.isCalculatingRoute) {
                                         Row(
                                             verticalAlignment = Alignment.CenterVertically,
-                                            modifier = Modifier.fillMaxWidth()
+                                            horizontalArrangement = Arrangement.Center,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 12.dp)
                                         ) {
-                                            Surface(
-                                                shape = CircleShape,
-                                                color = MaterialTheme.colorScheme.primary,
-                                                modifier = Modifier.size(48.dp)
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.size(24.dp),
+                                                strokeWidth = 2.5.dp,
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+                                            Spacer(modifier = Modifier.width(12.dp))
+                                            Text(
+                                                text = "Calculating OSRM route...",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                        }
+                                    } else routeState.activeRoute?.let { route ->
+                                        Column(modifier = Modifier.fillMaxWidth()) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier.fillMaxWidth()
                                             ) {
-                                                Box(contentAlignment = Alignment.Center) {
-                                                    Icon(
-                                                        imageVector = Icons.Default.Navigation,
-                                                        contentDescription = "Navigation",
-                                                        tint = MaterialTheme.colorScheme.onPrimary,
-                                                        modifier = Modifier.size(24.dp)
-                                                    )
-                                                }
-                                            }
-
-                                            Spacer(modifier = Modifier.width(14.dp))
-
-                                            Column(modifier = Modifier.weight(1f)) {
-                                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                                    val displayDuration = if (routeState.navigationState.isNavigating) {
-                                                        routeState.navigationState.formattedRemainingDuration()
-                                                    } else {
-                                                        route.formattedDuration()
-                                                    }
-                                                    val displayDistance = if (routeState.navigationState.isNavigating) {
-                                                        routeState.navigationState.formattedRemainingDistance()
-                                                    } else {
-                                                        route.formattedDistance()
-                                                    }
-
-                                                    Text(
-                                                        text = displayDuration,
-                                                        style = MaterialTheme.typography.headlineSmall,
-                                                        fontWeight = FontWeight.Bold,
-                                                        color = if (routeState.navigationState.isNavigating) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
-                                                    )
-                                                    Spacer(modifier = Modifier.width(8.dp))
-                                                    Surface(
-                                                        shape = RoundedCornerShape(8.dp),
-                                                        color = MaterialTheme.colorScheme.tertiaryContainer
-                                                    ) {
-                                                        Text(
-                                                            text = displayDistance,
-                                                            style = MaterialTheme.typography.labelMedium,
-                                                            fontWeight = FontWeight.Bold,
-                                                            color = MaterialTheme.colorScheme.onTertiaryContainer,
-                                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                                Surface(
+                                                    shape = CircleShape,
+                                                    color = MaterialTheme.colorScheme.primary,
+                                                    modifier = Modifier.size(48.dp)
+                                                ) {
+                                                    Box(contentAlignment = Alignment.Center) {
+                                                        Icon(
+                                                            imageVector = Icons.Default.Navigation,
+                                                            contentDescription = "Navigation",
+                                                            tint = MaterialTheme.colorScheme.onPrimary,
+                                                            modifier = Modifier.size(24.dp)
                                                         )
                                                     }
                                                 }
-                                                Text(
-                                                    text = "${route.originName} → ${route.destinationName}",
-                                                    style = MaterialTheme.typography.bodyMedium,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Ellipsis,
-                                                    modifier = Modifier.padding(top = 2.dp)
-                                                )
-                                            }
 
-                                            IconButton(onClick = { viewModel.clearRoute() }) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Close,
-                                                    contentDescription = "Clear Route",
-                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
-                                            }
-                                        }
+                                                Spacer(modifier = Modifier.width(14.dp))
 
-                                        Spacer(modifier = Modifier.height(16.dp))
+                                                Column(modifier = Modifier.weight(1f)) {
+                                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                                        val displayDuration = if (routeState.navigationState.isNavigating) {
+                                                            routeState.navigationState.formattedRemainingDuration()
+                                                        } else {
+                                                            route.formattedDuration()
+                                                        }
+                                                        val displayDistance = if (routeState.navigationState.isNavigating) {
+                                                            routeState.navigationState.formattedRemainingDistance()
+                                                        } else {
+                                                            route.formattedDistance()
+                                                        }
 
-                                        // Prominent M3 Button: Start / Stop Live Navigation
-                                        Button(
-                                            onClick = {
-                                                if (routeState.navigationState.isNavigating) {
-                                                    viewModel.stopLiveNavigation()
-                                                } else {
-                                                    viewModel.startLiveNavigation()
+                                                        Text(
+                                                            text = displayDuration,
+                                                            style = MaterialTheme.typography.headlineSmall,
+                                                            fontWeight = FontWeight.Bold,
+                                                            color = if (routeState.navigationState.isNavigating) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
+                                                        )
+                                                        Spacer(modifier = Modifier.width(8.dp))
+                                                        Surface(
+                                                            shape = RoundedCornerShape(8.dp),
+                                                            color = MaterialTheme.colorScheme.tertiaryContainer
+                                                        ) {
+                                                            Text(
+                                                                text = displayDistance,
+                                                                style = MaterialTheme.typography.labelMedium,
+                                                                fontWeight = FontWeight.Bold,
+                                                                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                                            )
+                                                        }
+                                                    }
+                                                    Text(
+                                                        text = "${route.originName} → ${route.destinationName}",
+                                                        style = MaterialTheme.typography.bodyMedium,
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                        maxLines = 1,
+                                                        overflow = TextOverflow.Ellipsis,
+                                                        modifier = Modifier.padding(top = 2.dp)
+                                                    )
                                                 }
-                                            },
-                                            shape = CircleShape,
-                                            colors = ButtonDefaults.buttonColors(
-                                                containerColor = if (routeState.navigationState.isNavigating) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-                                                contentColor = if (routeState.navigationState.isNavigating) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onPrimary
-                                            ),
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-                                            Icon(
-                                                imageVector = if (routeState.navigationState.isNavigating) Icons.Default.Close else Icons.Default.Navigation,
-                                                contentDescription = if (routeState.navigationState.isNavigating) "Stop Navigation" else "Start Navigation",
-                                                modifier = Modifier.size(20.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(8.dp))
-                                            Text(
-                                                text = if (routeState.navigationState.isNavigating) "Stop Live Navigation" else "Start Live Navigation",
-                                                style = MaterialTheme.typography.titleSmall,
-                                                fontWeight = FontWeight.Bold
-                                            )
+
+                                                IconButton(onClick = { viewModel.clearRoute() }) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.Close,
+                                                        contentDescription = "Clear Route",
+                                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                                    )
+                                                }
+                                            }
+
+                                            Spacer(modifier = Modifier.height(16.dp))
+
+                                            // Prominent M3 Button: Start / Stop Live Navigation
+                                            Button(
+                                                onClick = {
+                                                    if (routeState.navigationState.isNavigating) {
+                                                        viewModel.stopLiveNavigation()
+                                                    } else {
+                                                        viewModel.startLiveNavigation()
+                                                    }
+                                                },
+                                                shape = CircleShape,
+                                                colors = ButtonDefaults.buttonColors(
+                                                    containerColor = if (routeState.navigationState.isNavigating) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                                                    contentColor = if (routeState.navigationState.isNavigating) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onPrimary
+                                                ),
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                Icon(
+                                                    imageVector = if (routeState.navigationState.isNavigating) Icons.Default.Close else Icons.Default.Navigation,
+                                                    contentDescription = if (routeState.navigationState.isNavigating) "Stop Navigation" else "Start Navigation",
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(
+                                                    text = if (routeState.navigationState.isNavigating) "Stop Live Navigation" else "Start Live Navigation",
+                                                    style = MaterialTheme.typography.titleSmall,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
                                         }
                                     }
                                 }

@@ -57,7 +57,8 @@ data class RouteState(
     val isCalculatingRoute: Boolean = false,
     val activeRoute: RouteResult? = null,
     val routeError: String? = null,
-    val navigationState: LiveNavigationState = LiveNavigationState()
+    val navigationState: LiveNavigationState = LiveNavigationState(),
+    val isCollapsed: Boolean = false
 )
 
 data class SearchState(
