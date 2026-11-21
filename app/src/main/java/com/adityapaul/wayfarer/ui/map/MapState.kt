@@ -21,6 +21,22 @@ enum class RouteSelectionStep {
     SELECT_DEST     // Selecting destination location
 }
 
+enum class GeekLogType {
+    NET,   // Network / HTTP REST requests (Nominatim, OSRM)
+    GPS,   // FusedLocationProviderClient telemetry
+    MAP,   // MapLibre GL tile engine & camera
+    ROUTE, // OSRM geometry calculation & Map-matching
+    SYS    // System & state events
+}
+
+data class GeekLogEntry(
+    val id: Long = System.nanoTime(),
+    val timestamp: String,
+    val tag: GeekLogType,
+    val title: String,
+    val details: String
+)
+
 data class LiveNavigationState(
     val isNavigating: Boolean = false,
     val snappedLocation: LatLng? = null,
@@ -87,5 +103,8 @@ data class MapState(
     val themeMode: AppThemeMode = AppThemeMode.SYSTEM,
     val colorPalette: AppColorPalette = AppColorPalette.LAVENDER_PURPLE,
     val useDynamicColor: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
-    val isSettingsOpen: Boolean = false
+    val isSettingsOpen: Boolean = false,
+    val isGeekModeEnabled: Boolean = false,
+    val isGeekConsoleExpanded: Boolean = false,
+    val geekLogs: List<GeekLogEntry> = emptyList()
 )
