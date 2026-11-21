@@ -104,7 +104,6 @@ data class MapState(
     val colorPalette: AppColorPalette = AppColorPalette.LAVENDER_PURPLE,
     val useDynamicColor: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
     val isSettingsOpen: Boolean = false,
-    val isGeekModeEnabled: Boolean = false,
-    val isGeekConsoleExpanded: Boolean = false,
+    val isGeekLogsOpen: Boolean = false,
     val geekLogs: List<GeekLogEntry> = emptyList()
 )

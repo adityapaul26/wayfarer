@@ -29,7 +29,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -217,11 +216,8 @@ fun MapScreen(
                                 onValueChange = { viewModel.onSearchQueryChange(it) },
                                 placeholder = {
                                     Text(
-                                        text = if (uiState.isGeekModeEnabled) "GEEK: Nominatim GET /search?q=..." else "Search places, roads, landmarks...",
-                                        style = MaterialTheme.typography.bodyMedium.copy(
-                                            fontFamily = if (uiState.isGeekModeEnabled) FontFamily.Monospace else FontFamily.Default,
-                                            fontSize = if (uiState.isGeekModeEnabled) 12.sp else 14.sp
-                                        ),
+                                        text = "Search places, roads, landmarks...",
+                                        style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                                     )
                                 },
@@ -600,11 +596,8 @@ fun MapScreen(
                                         )
                                         Spacer(modifier = Modifier.width(12.dp))
                                         Text(
-                                            text = if (uiState.isGeekModeEnabled) "HTTP GET nominatim.openstreetmap.org/search..." else "Searching places...",
-                                            style = MaterialTheme.typography.bodyMedium.copy(
-                                                fontFamily = if (uiState.isGeekModeEnabled) FontFamily.Monospace else FontFamily.Default,
-                                                fontSize = if (uiState.isGeekModeEnabled) 12.sp else 14.sp
-                                            ),
+                                            text = "Searching places...",
+                                            style = MaterialTheme.typography.bodyMedium,
                                             fontWeight = FontWeight.Medium,
                                             color = MaterialTheme.colorScheme.onSurface
                                         )
@@ -806,7 +799,7 @@ fun MapScreen(
                 }
             }
 
-            // Material 3 Bottom Sheets (Settings, Active Route, or Selected Place Pin)
+            // Material 3 Bottom Sheets (Logs for Geeks, Settings, Active Route, or Selected Place Pin)
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -814,6 +807,13 @@ fun MapScreen(
                     .padding(bottom = 38.dp)
             ) {
                 when {
+                    uiState.isGeekLogsOpen -> {
+                        GeekLogsWindow(
+                            uiState = uiState,
+                            viewModel = viewModel
+                        )
+                    }
+
                     uiState.isSettingsOpen -> {
                         SettingsSheet(
                             uiState = uiState,
@@ -960,11 +960,8 @@ fun MapScreen(
                                             )
                                             Spacer(modifier = Modifier.width(12.dp))
                                             Text(
-                                                text = if (uiState.isGeekModeEnabled) "HTTP GET router.project-osrm.org/route/v1/driving/..." else "Calculating OSRM route...",
-                                                style = MaterialTheme.typography.bodyMedium.copy(
-                                                    fontFamily = if (uiState.isGeekModeEnabled) FontFamily.Monospace else FontFamily.Default,
-                                                    fontSize = if (uiState.isGeekModeEnabled) 12.sp else 14.sp
-                                                ),
+                                                text = "Calculating OSRM route...",
+                                                style = MaterialTheme.typography.bodyMedium,
                                                 fontWeight = FontWeight.Medium
                                             )
                                         }
@@ -1212,22 +1209,6 @@ fun MapScreen(
                 }
             }
 
-            // Floating Geek Telemetry HUD Console Pod (Top Left below Search/Route Header)
-            if (uiState.isGeekModeEnabled) {
-                val topPadding = if (routeState.step == RouteSelectionStep.NONE) 68.dp else 220.dp
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .statusBarsPadding()
-                        .padding(start = 16.dp, top = topPadding)
-                ) {
-                    GeekConsoleHud(
-                        uiState = uiState,
-                        viewModel = viewModel
-                    )
-                }
-            }
-
             // Material 3 Map Attribution Footer (Bottom Left)
             Surface(
                 shape = RoundedCornerShape(10.dp),
@@ -1254,178 +1235,134 @@ fun MapScreen(
 }
 
 @Composable
-fun GeekConsoleHud(
+fun GeekLogsWindow(
     uiState: MapState,
     viewModel: MapViewModel
 ) {
-    if (!uiState.isGeekConsoleExpanded) {
-        // Compact Small Pill (Collapsed State)
-        Surface(
-            shape = CircleShape,
-            color = Color(0xFF0F172A).copy(alpha = 0.92f),
-            tonalElevation = 6.dp,
-            shadowElevation = 8.dp,
-            modifier = Modifier
-                .border(
-                    width = 1.dp,
-                    color = Color(0xFF334155),
-                    shape = CircleShape
-                )
-                .clip(CircleShape)
-                .clickable { viewModel.toggleGeekConsole() }
+    Surface(
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 24.dp, bottomEnd = 24.dp),
+        color = Color(0xFF0F172A),
+        tonalElevation = 10.dp,
+        shadowElevation = 12.dp,
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .fillMaxWidth()
+            .border(
+                width = 1.dp,
+                color = Color(0xFF334155),
+                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
+            )
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
         ) {
+            // Drag handle pill
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = Color(0xFF334155),
+                    modifier = Modifier
+                        .width(36.dp)
+                        .height(4.dp)
+                ) {}
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Header Row
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Surface(
                     shape = CircleShape,
                     color = Color(0xFF10B981).copy(alpha = 0.25f),
-                    modifier = Modifier.size(22.dp)
+                    modifier = Modifier.size(36.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = Icons.Default.Code,
-                            contentDescription = "Geek Mode HUD",
+                            contentDescription = "Logs for Geeks",
                             tint = Color(0xFF10B981),
-                            modifier = Modifier.size(13.dp)
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = "GEEK_HUD",
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = Color(0xFF38BDF8)
-                )
-                if (uiState.geekLogs.isNotEmpty()) {
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Surface(
-                        shape = CircleShape,
-                        color = Color(0xFF3B82F6).copy(alpha = 0.3f)
-                    ) {
-                        Text(
-                            text = "${uiState.geekLogs.size}",
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                fontFamily = FontFamily.Monospace,
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Bold
-                            ),
-                            color = Color(0xFFF8FAFC),
-                            modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp)
-                        )
-                    }
-                }
-            }
-        }
-    } else {
-        // Expanded Terminal Console Sheet
-        Surface(
-            shape = RoundedCornerShape(20.dp),
-            color = Color(0xFF0F172A).copy(alpha = 0.95f),
-            tonalElevation = 10.dp,
-            shadowElevation = 12.dp,
-            modifier = Modifier
-                .widthIn(max = 320.dp)
-                .border(
-                    width = 1.dp,
-                    color = Color(0xFF334155),
-                    shape = RoundedCornerShape(20.dp)
-                )
-        ) {
-            Column(
-                modifier = Modifier.padding(12.dp)
-            ) {
-                // Terminal Header
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .clickable { viewModel.toggleGeekConsole() }
-                        .padding(vertical = 4.dp, horizontal = 4.dp)
-                ) {
-                    Surface(
-                        shape = CircleShape,
-                        color = Color(0xFF10B981).copy(alpha = 0.2f),
-                        modifier = Modifier.size(26.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = Icons.Default.Code,
-                                contentDescription = "Geek Mode HUD",
-                                tint = Color(0xFF10B981),
-                                modifier = Modifier.size(15.dp)
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "GEEK_MODE_LOGS",
+                        text = "Logs for Geeks",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFF8FAFC)
+                    )
+                    Text(
+                        text = "Real-time Developer Telemetry Stream",
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontFamily = FontFamily.Monospace,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
+                            fontSize = 10.sp
                         ),
-                        color = Color(0xFF38BDF8),
-                        modifier = Modifier.weight(1f)
+                        color = Color(0xFF38BDF8)
                     )
-
-                    if (uiState.geekLogs.isNotEmpty()) {
-                        IconButton(
-                            onClick = { viewModel.clearGeekLogs() },
-                            modifier = Modifier.size(28.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.DeleteSweep,
-                                contentDescription = "Clear Logs",
-                                tint = Color(0xFF94A3B8),
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    }
-
+                }
+                if (uiState.geekLogs.isNotEmpty()) {
                     IconButton(
-                        onClick = { viewModel.toggleGeekConsole() },
-                        modifier = Modifier.size(28.dp)
+                        onClick = { viewModel.clearGeekLogs() },
+                        modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = "Collapse Console",
+                            imageVector = Icons.Default.DeleteSweep,
+                            contentDescription = "Clear Logs",
                             tint = Color(0xFF94A3B8),
                             modifier = Modifier.size(18.dp)
                         )
                     }
                 }
+                IconButton(
+                    onClick = { viewModel.closeGeekLogs() },
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close Window",
+                        tint = Color(0xFF94A3B8),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
 
-                Spacer(modifier = Modifier.height(6.dp))
-                HorizontalDivider(color = Color(0xFF334155))
-                Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(14.dp))
+            HorizontalDivider(color = Color(0xFF334155))
+            Spacer(modifier = Modifier.height(14.dp))
 
-                if (uiState.geekLogs.isEmpty()) {
+            if (uiState.geekLogs.isEmpty()) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 32.dp)
+                ) {
                     Text(
-                        text = "> Waiting for HTTP, GPS, or OSRM events...",
+                        text = "> Waiting for HTTP network, GPS telemetry, or OSRM route events...",
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontFamily = FontFamily.Monospace,
-                            fontSize = 10.sp
+                            fontSize = 11.sp
                         ),
-                        color = Color(0xFF64748B),
-                        modifier = Modifier.padding(vertical = 10.dp, horizontal = 4.dp)
+                        color = Color(0xFF64748B)
                     )
-                } else {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 180.dp)
-                    ) {
-                        items(uiState.geekLogs) { log ->
-                            GeekLogLine(log = log)
-                        }
+                }
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 320.dp)
+                ) {
+                    items(uiState.geekLogs) { log ->
+                        GeekLogLine(log = log)
                     }
                 }
             }
@@ -1680,7 +1617,7 @@ fun SettingsSheet(
                 }
             }
 
-            // Section 3: Geek Mode (Developer Telemetry HUD) Toggle
+            // Section 3: Logs for Geeks Clickable Option
             Spacer(modifier = Modifier.height(12.dp))
 
             Surface(
@@ -1688,6 +1625,8 @@ fun SettingsSheet(
                 color = MaterialTheme.colorScheme.surface,
                 modifier = Modifier
                     .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable { viewModel.openGeekLogs() }
                     .border(
                         width = 1.dp,
                         color = MaterialTheme.colorScheme.outlineVariant,
@@ -1696,7 +1635,7 @@ fun SettingsSheet(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)
                 ) {
                     Surface(
                         shape = CircleShape,
@@ -1706,7 +1645,7 @@ fun SettingsSheet(
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = Icons.Default.Code,
-                                contentDescription = "Geek Mode",
+                                contentDescription = "Logs for Geeks",
                                 tint = MaterialTheme.colorScheme.onTertiaryContainer,
                                 modifier = Modifier.size(18.dp)
                             )
@@ -1715,24 +1654,22 @@ fun SettingsSheet(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Geek Mode (Dev Telemetry HUD)",
+                            text = "Logs for Geeks",
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "Shows live HTTP REST logs, GPS metrics, and OSRM parameters",
+                            text = "Inspect live HTTP REST requests, GPS metrics, and OSRM parameters",
                             style = MaterialTheme.typography.bodyMedium.copy(fontSize = 11.sp),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    Switch(
-                        checked = uiState.isGeekModeEnabled,
-                        onCheckedChange = { viewModel.toggleGeekMode() },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                            checkedTrackColor = MaterialTheme.colorScheme.primary
-                        )
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowUp,
+                        contentDescription = "Open Logs",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }

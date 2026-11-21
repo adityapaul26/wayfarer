@@ -197,28 +197,29 @@ class MapViewModel(
         }
     }
 
-    fun toggleGeekMode() {
+    fun openGeekLogs() {
         _uiState.update { currentState ->
-            val newMode = !currentState.isGeekModeEnabled
-            val stateWithMode = currentState.copy(isGeekModeEnabled = newMode)
-            if (newMode) {
+            if (currentState.geekLogs.isEmpty()) {
                 val timestamp = SimpleDateFormat("HH:mm:ss.SSS", Locale.US).format(Date())
                 val initialLog = GeekLogEntry(
                     timestamp = timestamp,
                     tag = GeekLogType.SYS,
-                    title = "GEEK MODE ACTIVATED",
-                    details = "Developer Telemetry Console Enabled. HTTP requests, GPS satellite metrics, and OSRM geometry calculation logs will be illustrated here live."
+                    title = "LOGS FOR GEEKS INITIALIZED",
+                    details = "Developer Telemetry Log Window. Captures HTTP REST requests, GPS satellite metrics, and OSRM geometry calculation parameters."
                 )
-                stateWithMode.copy(geekLogs = listOf(initialLog))
+                currentState.copy(
+                    isGeekLogsOpen = true,
+                    geekLogs = listOf(initialLog)
+                )
             } else {
-                stateWithMode
+                currentState.copy(isGeekLogsOpen = true)
             }
         }
     }
 
-    fun toggleGeekConsole() {
+    fun closeGeekLogs() {
         _uiState.update { currentState ->
-            currentState.copy(isGeekConsoleExpanded = !currentState.isGeekConsoleExpanded)
+            currentState.copy(isGeekLogsOpen = false)
         }
     }
 
@@ -245,13 +246,11 @@ class MapViewModel(
         }
 
         val encodedQuery = try { URLEncoder.encode(query, "UTF-8") } catch (e: Exception) { query }
-        if (_uiState.value.isGeekModeEnabled) {
-            addGeekLog(
-                GeekLogType.NET,
-                "HTTP GET nominatim.openstreetmap.org/search",
-                "https://nominatim.openstreetmap.org/search?q=$encodedQuery&format=json&addressdetails=1&limit=10"
-            )
-        }
+        addGeekLog(
+            GeekLogType.NET,
+            "HTTP GET nominatim.openstreetmap.org/search",
+            "https://nominatim.openstreetmap.org/search?q=$encodedQuery&format=json&addressdetails=1&limit=10"
+        )
 
         _uiState.update { currentState ->
             currentState.copy(
@@ -268,13 +267,11 @@ class MapViewModel(
         searchJob = viewModelScope.launch {
             val result = geocodingRepository.searchPlaces(query)
             result.onSuccess { places ->
-                if (_uiState.value.isGeekModeEnabled) {
-                    addGeekLog(
-                        GeekLogType.NET,
-                        "Nominatim Response 200 OK",
-                        "Parsed ${places.size} places for query \"$query\""
-                    )
-                }
+                addGeekLog(
+                    GeekLogType.NET,
+                    "Nominatim Response 200 OK",
+                    "Parsed ${places.size} places for query \"$query\""
+                )
                 if (places.isNotEmpty()) {
                     saveRecentSearch(places.first())
                 }
@@ -288,13 +285,11 @@ class MapViewModel(
                     )
                 }
             }.onFailure { exception ->
-                if (_uiState.value.isGeekModeEnabled) {
-                    addGeekLog(
-                        GeekLogType.NET,
-                        "Nominatim Network Error",
-                        exception.message ?: "Failed to fetch place search"
-                    )
-                }
+                addGeekLog(
+                    GeekLogType.NET,
+                    "Nominatim Network Error",
+                    exception.message ?: "Failed to fetch place search"
+                )
                 _uiState.update { currentState ->
                     currentState.copy(
                         searchState = currentState.searchState.copy(
@@ -513,13 +508,11 @@ class MapViewModel(
 
     private fun calculateRoute(origin: SearchResult, destination: SearchResult) {
         val param = String.format(Locale.US, "%.6f,%.6f;%.6f,%.6f", origin.longitude, origin.latitude, destination.longitude, destination.latitude)
-        if (_uiState.value.isGeekModeEnabled) {
-            addGeekLog(
-                GeekLogType.NET,
-                "HTTP GET router.project-osrm.org/route/v1/driving",
-                "https://router.project-osrm.org/route/v1/driving/$param?overview=full&geometries=geojson"
-            )
-        }
+        addGeekLog(
+            GeekLogType.NET,
+            "HTTP GET router.project-osrm.org/route/v1/driving",
+            "https://router.project-osrm.org/route/v1/driving/$param?overview=full&geometries=geojson"
+        )
 
         _uiState.update { currentState ->
             currentState.copy(
@@ -543,13 +536,11 @@ class MapViewModel(
             )
 
             result.onSuccess { routeResult ->
-                if (_uiState.value.isGeekModeEnabled) {
-                    addGeekLog(
-                        GeekLogType.ROUTE,
-                        "OSRM Route Calculated",
-                        "Parsed ${routeResult.points.size} GeoJSON LineString coordinates • Distance: ${routeResult.formattedDistance()} • Duration: ${routeResult.formattedDuration()}"
-                    )
-                }
+                addGeekLog(
+                    GeekLogType.ROUTE,
+                    "OSRM Route Calculated",
+                    "Parsed ${routeResult.points.size} GeoJSON LineString coordinates • Distance: ${routeResult.formattedDistance()} • Duration: ${routeResult.formattedDuration()}"
+                )
                 _uiState.update { currentState ->
                     currentState.copy(
                         routeState = currentState.routeState.copy(
@@ -560,13 +551,11 @@ class MapViewModel(
                     )
                 }
             }.onFailure { exception ->
-                if (_uiState.value.isGeekModeEnabled) {
-                    addGeekLog(
-                        GeekLogType.NET,
-                        "OSRM Route HTTP Error",
-                        exception.message ?: "Failed to calculate OSRM route"
-                    )
-                }
+                addGeekLog(
+                    GeekLogType.NET,
+                    "OSRM Route HTTP Error",
+                    exception.message ?: "Failed to calculate OSRM route"
+                )
                 _uiState.update { currentState ->
                     currentState.copy(
                         routeState = currentState.routeState.copy(
