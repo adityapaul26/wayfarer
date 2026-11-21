@@ -162,7 +162,7 @@ fun MapScreen(
                 modifier = Modifier.fillMaxSize()
             )
 
-            // Top Header: Material 3 SearchBar Pill or Route Selector Panel
+            // Top Header: Compact Material 3 SearchBar Pill or Route Selector Panel
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -171,7 +171,7 @@ fun MapScreen(
                     .align(Alignment.TopCenter)
             ) {
                 if (routeState.step == RouteSelectionStep.NONE) {
-                    // Material 3 Floating SearchBar Pill
+                    // Material 3 Floating SearchBar Pill with Soft Lavender Accent Border
                     Surface(
                         shape = CircleShape,
                         color = MaterialTheme.colorScheme.surfaceVariant,
@@ -181,7 +181,7 @@ fun MapScreen(
                             .fillMaxWidth()
                             .border(
                                 width = 1.dp,
-                                color = MaterialTheme.colorScheme.outlineVariant,
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
                                 shape = CircleShape
                             )
                     ) {
@@ -280,8 +280,8 @@ fun MapScreen(
                                 FilledTonalIconButton(
                                     onClick = { viewModel.startRoutePlanning() },
                                     colors = IconButtonDefaults.filledTonalIconButtonColors(
-                                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                                     ),
                                     modifier = Modifier.size(40.dp)
                                 ) {
@@ -299,13 +299,13 @@ fun MapScreen(
                     Surface(
                         shape = RoundedCornerShape(28.dp),
                         color = MaterialTheme.colorScheme.surfaceVariant,
-                        tonalElevation = 6.dp,
-                        shadowElevation = 8.dp,
+                        tonalElevation = 4.dp,
+                        shadowElevation = 6.dp,
                         modifier = Modifier
                             .fillMaxWidth()
                             .border(
                                 width = 1.dp,
-                                color = MaterialTheme.colorScheme.outlineVariant,
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
                                 shape = RoundedCornerShape(28.dp)
                             )
                     ) {
@@ -563,15 +563,15 @@ fun MapScreen(
                     Surface(
                         shape = RoundedCornerShape(24.dp),
                         color = MaterialTheme.colorScheme.surfaceVariant,
-                        tonalElevation = 6.dp,
-                        shadowElevation = 8.dp,
+                        tonalElevation = 4.dp,
+                        shadowElevation = 6.dp,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 8.dp)
                             .heightIn(max = 300.dp)
                             .border(
                                 width = 1.dp,
-                                color = MaterialTheme.colorScheme.outlineVariant,
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
                                 shape = RoundedCornerShape(24.dp)
                             )
                     ) {
@@ -698,25 +698,25 @@ fun MapScreen(
                 }
             }
 
-            // Material 3 Floating Action Buttons Bank (Right Side)
+            // Material 3 Floating Action Controls (Right Side)
             Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
                     .padding(end = 16.dp)
             ) {
-                // Unified M3 Zoom Control Surface (48dp touch targets)
+                // Unified M3 Zoom Control Surface
                 Surface(
                     shape = RoundedCornerShape(24.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant,
-                    tonalElevation = 4.dp,
-                    shadowElevation = 6.dp,
+                    tonalElevation = 3.dp,
+                    shadowElevation = 4.dp,
                     modifier = Modifier
                         .width(48.dp)
                         .border(
                             width = 1.dp,
-                            color = MaterialTheme.colorScheme.outlineVariant,
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
                             shape = RoundedCornerShape(24.dp)
                         )
                 ) {
@@ -733,7 +733,7 @@ fun MapScreen(
                         }
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = 8.dp),
-                            color = MaterialTheme.colorScheme.outlineVariant
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
                         )
                         IconButton(
                             onClick = { viewModel.zoomOut() },
@@ -748,7 +748,7 @@ fun MapScreen(
                     }
                 }
 
-                // M3 My Location Small FAB
+                // M3 My Location Small FAB — Prominent Soft Lavender Accent Fill
                 SmallFloatingActionButton(
                     onClick = {
                         if (uiState.isLocationPermissionGranted) {
@@ -762,8 +762,8 @@ fun MapScreen(
                             )
                         }
                     },
-                    containerColor = if (uiState.userLocation != null) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = if (uiState.userLocation != null) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurface,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
@@ -828,8 +828,8 @@ fun MapScreen(
                         Surface(
                             shape = if (isCollapsed) CircleShape else RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 24.dp, bottomEnd = 24.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant,
-                            tonalElevation = 8.dp,
-                            shadowElevation = 10.dp,
+                            tonalElevation = 4.dp,
+                            shadowElevation = 6.dp,
                             modifier = Modifier
                                 .padding(horizontal = 16.dp)
                                 .fillMaxWidth()
@@ -841,7 +841,7 @@ fun MapScreen(
                                 )
                                 .border(
                                     width = 1.dp,
-                                    color = MaterialTheme.colorScheme.outlineVariant,
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
                                     shape = if (isCollapsed) CircleShape else RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
                                 )
                         ) {
@@ -869,14 +869,14 @@ fun MapScreen(
                                 ) {
                                     Surface(
                                         shape = CircleShape,
-                                        color = if (routeState.navigationState.isNavigating) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer,
+                                        color = if (routeState.navigationState.isNavigating) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
                                         modifier = Modifier.size(36.dp)
                                     ) {
                                         Box(contentAlignment = Alignment.Center) {
                                             Icon(
                                                 imageVector = Icons.Default.Navigation,
                                                 contentDescription = "Navigation",
-                                                tint = if (routeState.navigationState.isNavigating) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer,
+                                                tint = if (routeState.navigationState.isNavigating) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer,
                                                 modifier = Modifier.size(18.dp)
                                             )
                                         }
@@ -1083,14 +1083,14 @@ fun MapScreen(
                             Surface(
                                 shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 24.dp, bottomEnd = 24.dp),
                                 color = MaterialTheme.colorScheme.surfaceVariant,
-                                tonalElevation = 8.dp,
-                                shadowElevation = 10.dp,
+                                tonalElevation = 4.dp,
+                                shadowElevation = 6.dp,
                                 modifier = Modifier
                                     .padding(horizontal = 16.dp)
                                     .fillMaxWidth()
                                     .border(
                                         width = 1.dp,
-                                        color = MaterialTheme.colorScheme.outlineVariant,
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
                                         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
                                     )
                             ) {
@@ -1212,14 +1212,14 @@ fun MapScreen(
             // Material 3 Map Attribution Footer (Bottom Left)
             Surface(
                 shape = RoundedCornerShape(10.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.85f),
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .navigationBarsPadding()
                     .padding(start = 12.dp, bottom = 8.dp)
                     .border(
                         width = 0.5.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
                         shape = RoundedCornerShape(10.dp)
                     )
             ) {
@@ -1445,14 +1445,14 @@ fun SettingsSheet(
     Surface(
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 24.dp, bottomEnd = 24.dp),
         color = MaterialTheme.colorScheme.surfaceVariant,
-        tonalElevation = 8.dp,
-        shadowElevation = 10.dp,
+        tonalElevation = 4.dp,
+        shadowElevation = 6.dp,
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .fillMaxWidth()
             .border(
                 width = 1.dp,
-                color = MaterialTheme.colorScheme.outlineVariant,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
                 shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
             )
     ) {
@@ -1541,7 +1541,7 @@ fun SettingsSheet(
                             .clickable { viewModel.setThemeMode(mode) }
                             .border(
                                 width = if (isSelected) 0.dp else 1.dp,
-                                color = MaterialTheme.colorScheme.outlineVariant,
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
                                 shape = CircleShape
                             )
                     ) {
@@ -1584,7 +1584,7 @@ fun SettingsSheet(
                         .fillMaxWidth()
                         .border(
                             width = 1.dp,
-                            color = MaterialTheme.colorScheme.outlineVariant,
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
                             shape = RoundedCornerShape(16.dp)
                         )
                 ) {
@@ -1629,7 +1629,7 @@ fun SettingsSheet(
                     .clickable { viewModel.openGeekLogs() }
                     .border(
                         width = 1.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant,
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
                         shape = RoundedCornerShape(16.dp)
                     )
             ) {
@@ -1734,7 +1734,7 @@ fun PaletteChoiceCard(
             .clickable { onSelect() }
             .border(
                 width = if (isSelected) 1.5.dp else 1.dp,
-                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
                 shape = RoundedCornerShape(16.dp)
             )
     ) {

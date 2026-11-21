@@ -102,7 +102,7 @@ data class MapState(
     val selectedPinLocation: SearchResult? = null,
     val themeMode: AppThemeMode = AppThemeMode.SYSTEM,
     val colorPalette: AppColorPalette = AppColorPalette.LAVENDER_PURPLE,
-    val useDynamicColor: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
+    val useDynamicColor: Boolean = false,
     val isSettingsOpen: Boolean = false,
     val isGeekLogsOpen: Boolean = false,
     val geekLogs: List<GeekLogEntry> = emptyList()
