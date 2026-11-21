@@ -1,7 +1,6 @@
 package com.adityapaul.wayfarer.ui.map
 
 import android.Manifest
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -38,11 +37,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.Explore
@@ -51,7 +48,6 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Layers
-import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Navigation
@@ -59,7 +55,6 @@ import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.SettingsBrightness
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
@@ -81,8 +76,6 @@ import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -105,8 +98,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.adityapaul.wayfarer.data.search.SearchResult
-import com.adityapaul.wayfarer.ui.theme.AppColorPalette
-import com.adityapaul.wayfarer.ui.theme.AppThemeMode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -814,13 +805,6 @@ fun MapScreen(
                         )
                     }
 
-                    uiState.isSettingsOpen -> {
-                        SettingsSheet(
-                            uiState = uiState,
-                            viewModel = viewModel
-                        )
-                    }
-
                     routeState.isCalculatingRoute || routeState.activeRoute != null -> {
                         // Collapsible Material 3 Active Route Summary Sheet with Spring Physics
                         val isCollapsed = routeState.isCollapsed
@@ -1437,339 +1421,7 @@ fun GeekLogLine(log: GeekLogEntry) {
     }
 }
 
-@Composable
-fun SettingsSheet(
-    uiState: MapState,
-    viewModel: MapViewModel
-) {
-    Surface(
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 24.dp, bottomEnd = 24.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant,
-        tonalElevation = 4.dp,
-        shadowElevation = 6.dp,
-        modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .fillMaxWidth()
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
-                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
-            )
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
-            // Drag handle pill
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
-                    modifier = Modifier
-                        .width(36.dp)
-                        .height(4.dp)
-                ) {}
-            }
 
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Header Row
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier.size(38.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings",
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = "App Appearance & Theme",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.weight(1f)
-                )
-                IconButton(
-                    onClick = { viewModel.toggleSettings() },
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Close Settings",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Section 1: Material 3 Segmented Theme Mode Selector
-            Text(
-                text = "THEME MODE",
-                style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp),
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                AppThemeMode.entries.forEach { mode ->
-                    val isSelected = uiState.themeMode == mode
-                    Surface(
-                        shape = CircleShape,
-                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(CircleShape)
-                            .clickable { viewModel.setThemeMode(mode) }
-                            .border(
-                                width = if (isSelected) 0.dp else 1.dp,
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
-                                shape = CircleShape
-                            )
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier.padding(vertical = 10.dp)
-                        ) {
-                            val icon = when (mode) {
-                                AppThemeMode.SYSTEM -> Icons.Default.SettingsBrightness
-                                AppThemeMode.LIGHT -> Icons.Default.LightMode
-                                AppThemeMode.DARK -> Icons.Default.DarkMode
-                            }
-                            Icon(
-                                imageVector = icon,
-                                contentDescription = mode.displayName,
-                                tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = mode.displayName,
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Section 2: Material You Dynamic Color Toggle (Android 12+)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
-                            shape = RoundedCornerShape(16.dp)
-                        )
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "Material You Dynamic Color",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = "Matches app colors to device wallpaper",
-                                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 11.sp),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Switch(
-                            checked = uiState.useDynamicColor,
-                            onCheckedChange = { viewModel.toggleDynamicColor(it) },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                                checkedTrackColor = MaterialTheme.colorScheme.primary
-                            )
-                        )
-                    }
-                }
-            }
-
-            // Section 3: Logs for Geeks Clickable Option
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surface,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .clickable { viewModel.openGeekLogs() }
-                    .border(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
-                        shape = RoundedCornerShape(16.dp)
-                    )
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)
-                ) {
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.tertiaryContainer,
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = Icons.Default.Code,
-                                contentDescription = "Logs for Geeks",
-                                tint = MaterialTheme.colorScheme.onTertiaryContainer,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Logs for Geeks",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = "Inspect live HTTP REST requests, GPS metrics, and OSRM parameters",
-                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 11.sp),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowUp,
-                        contentDescription = "Open Logs",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(18.dp))
-
-            // Section 4: Material 3 Color Palettes (6 Custom Palettes)
-            Text(
-                text = "ACCENT COLOR PALETTE",
-                style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp),
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                AppColorPalette.entries.take(3).forEach { palette ->
-                    PaletteChoiceCard(
-                        palette = palette,
-                        isSelected = uiState.colorPalette == palette,
-                        onSelect = { viewModel.setColorPalette(palette) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                AppColorPalette.entries.drop(3).take(3).forEach { palette ->
-                    PaletteChoiceCard(
-                        palette = palette,
-                        isSelected = uiState.colorPalette == palette,
-                        onSelect = { viewModel.setColorPalette(palette) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun PaletteChoiceCard(
-    palette: AppColorPalette,
-    isSelected: Boolean,
-    onSelect: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
-        modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .clickable { onSelect() }
-            .border(
-                width = if (isSelected) 1.5.dp else 1.dp,
-                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
-                shape = RoundedCornerShape(16.dp)
-            )
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp)
-        ) {
-            Surface(
-                shape = CircleShape,
-                color = palette.previewColor,
-                modifier = Modifier.size(20.dp)
-            ) {
-                if (isSelected) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Selected",
-                            tint = Color.White,
-                            modifier = Modifier.size(12.dp)
-                        )
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = palette.displayName,
-                style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp),
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-    }
-}
 
 @Composable
 fun SearchResultItem(

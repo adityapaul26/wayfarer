@@ -699,6 +699,18 @@ class MapViewModel(
         }
     }
 
+    fun openSettings() {
+        _uiState.update { currentState ->
+            currentState.copy(isSettingsOpen = true)
+        }
+    }
+
+    fun closeSettings() {
+        _uiState.update { currentState ->
+            currentState.copy(isSettingsOpen = false)
+        }
+    }
+
     fun setThemeMode(themeMode: AppThemeMode) {
         _uiState.update { currentState ->
             val correspondingStyle = when (themeMode) {

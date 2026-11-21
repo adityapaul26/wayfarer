@@ -296,6 +296,44 @@ class MapViewModelTest {
         viewModel.toggleStyle()
         assertEquals(MapStyleType.LIGHT, viewModel.uiState.value.styleType)
     }
+
+    @Test
+    fun toggleSettings_opensAndClosesSettingsPage() {
+        assertFalse(viewModel.uiState.value.isSettingsOpen)
+        viewModel.toggleSettings()
+        assertTrue(viewModel.uiState.value.isSettingsOpen)
+        viewModel.toggleSettings()
+        assertFalse(viewModel.uiState.value.isSettingsOpen)
+    }
+
+    @Test
+    fun openAndCloseSettings_managesSettingsNavigationState() {
+        assertFalse(viewModel.uiState.value.isSettingsOpen)
+        viewModel.openSettings()
+        assertTrue(viewModel.uiState.value.isSettingsOpen)
+        viewModel.closeSettings()
+        assertFalse(viewModel.uiState.value.isSettingsOpen)
+    }
+
+    @Test
+    fun setThemeMode_updatesThemeAndMapStyle() {
+        viewModel.setThemeMode(com.adityapaul.wayfarer.ui.theme.AppThemeMode.DARK)
+        assertEquals(com.adityapaul.wayfarer.ui.theme.AppThemeMode.DARK, viewModel.uiState.value.themeMode)
+        assertEquals(MapStyleType.DARK, viewModel.uiState.value.styleType)
+    }
+
+    @Test
+    fun setColorPalette_updatesAccentPalette() {
+        viewModel.setColorPalette(com.adityapaul.wayfarer.ui.theme.AppColorPalette.CYAN_OCEAN)
+        assertEquals(com.adityapaul.wayfarer.ui.theme.AppColorPalette.CYAN_OCEAN, viewModel.uiState.value.colorPalette)
+    }
+
+    @Test
+    fun toggleDynamicColor_updatesDynamicColorState() {
+        assertFalse(viewModel.uiState.value.useDynamicColor)
+        viewModel.toggleDynamicColor(true)
+        assertTrue(viewModel.uiState.value.useDynamicColor)
+    }
 }
 
 private class FakeGeocodingRepository : GeocodingRepository {
