@@ -46,6 +46,8 @@ fun MapViewContainer(
     var mapLibreMap by remember { mutableStateOf<MapLibreMap?>(null) }
     var currentStyleUrl by remember { mutableStateOf<String?>(null) }
     var searchMarker by remember { mutableStateOf<Marker?>(null) }
+    var originMarker by remember { mutableStateOf<Marker?>(null) }
+    var destinationMarker by remember { mutableStateOf<Marker?>(null) }
     var currentPolyline by remember { mutableStateOf<Polyline?>(null) }
     var traveledPolyline by remember { mutableStateOf<Polyline?>(null) }
 
@@ -150,6 +152,40 @@ fun MapViewContainer(
         val newMarker = map.addMarker(markerOptions)
         searchMarker = newMarker
         newMarker.let { map.selectMarker(it) }
+    }
+
+    // Handle Origin (Start Circle) and Destination (Ending Pin) Markers
+    LaunchedEffect(mapState.routeState.origin, mapState.routeState.destination) {
+        val map = mapLibreMap ?: return@LaunchedEffect
+
+        originMarker?.let { map.removeMarker(it) }
+        originMarker = null
+        destinationMarker?.let { map.removeMarker(it) }
+        destinationMarker = null
+
+        // Render Start Location Circle Marker
+        mapState.routeState.origin?.let { origin ->
+            val startIcon = MapIconUtils.createOriginCircleIcon(context, android.graphics.Color.parseColor("#059669"))
+            val originOptions = MarkerOptions()
+                .position(LatLng(origin.latitude, origin.longitude))
+                .title("Start: ${origin.name}")
+                .snippet(origin.address)
+                .icon(startIcon)
+
+            originMarker = map.addMarker(originOptions)
+        }
+
+        // Render Ending Location Teardrop Pin Marker
+        mapState.routeState.destination?.let { dest ->
+            val endIcon = MapIconUtils.createDestinationPinIcon(context, android.graphics.Color.parseColor("#EF4444"))
+            val destOptions = MarkerOptions()
+                .position(LatLng(dest.latitude, dest.longitude))
+                .title("Destination: ${dest.name}")
+                .snippet(dest.address)
+                .icon(endIcon)
+
+            destinationMarker = map.addMarker(destOptions)
+        }
     }
 
     // Handle polyline route geometry rendering on map
