@@ -334,6 +334,20 @@ class MapViewModelTest {
         viewModel.toggleDynamicColor(true)
         assertTrue(viewModel.uiState.value.useDynamicColor)
     }
+
+    @Test
+    fun setLocationUpdateInterval_updatesIntervalStateAndClamps() {
+        assertEquals(3, viewModel.uiState.value.locationUpdateIntervalSeconds)
+        viewModel.setLocationUpdateInterval(5)
+        assertEquals(5, viewModel.uiState.value.locationUpdateIntervalSeconds)
+
+        // Clamping check
+        viewModel.setLocationUpdateInterval(0)
+        assertEquals(1, viewModel.uiState.value.locationUpdateIntervalSeconds)
+
+        viewModel.setLocationUpdateInterval(10)
+        assertEquals(8, viewModel.uiState.value.locationUpdateIntervalSeconds)
+    }
 }
 
 private class FakeGeocodingRepository : GeocodingRepository {

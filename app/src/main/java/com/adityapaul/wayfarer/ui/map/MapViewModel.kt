@@ -41,6 +41,7 @@ class MapViewModel(
     val uiState: StateFlow<MapState> = _uiState.asStateFlow()
 
     private var locationClient: LocationClient? = null
+    private var appContext: Context? = null
     private var locationJob: Job? = null
     private var searchJob: Job? = null
     private var routeJob: Job? = null
@@ -66,6 +67,7 @@ class MapViewModel(
     }
 
     fun startLocationUpdates(context: Context) {
+        appContext = context.applicationContext
         val client = locationClient ?: DefaultLocationClient(context.applicationContext).also {
             locationClient = it
         }
@@ -77,8 +79,9 @@ class MapViewModel(
             _uiState.update { it.copy(userMessage = "GPS is disabled on device") }
         }
 
+        val intervalMs = _uiState.value.locationUpdateIntervalSeconds * 1000L
         locationJob?.cancel()
-        locationJob = client.getLocationUpdates(intervalMs = 3000L)
+        locationJob = client.getLocationUpdates(intervalMs = intervalMs)
             .catch { exception ->
                 _uiState.update { it.copy(userMessage = exception.message ?: "Location error") }
             }
@@ -734,6 +737,28 @@ class MapViewModel(
     fun toggleDynamicColor(enabled: Boolean) {
         _uiState.update { currentState ->
             currentState.copy(useDynamicColor = enabled)
+        }
+    }
+
+    fun setLocationUpdateInterval(seconds: Int) {
+        val clampedSeconds = seconds.coerceIn(1, 8)
+        _uiState.update { currentState ->
+            currentState.copy(locationUpdateIntervalSeconds = clampedSeconds)
+        }
+
+        val timestamp = SimpleDateFormat("HH:mm:ss.SSS", Locale.US).format(Date())
+        val logEntry = GeekLogEntry(
+            timestamp = timestamp,
+            tag = GeekLogType.GPS,
+            title = "GPS UPDATE INTERVAL SET TO ${clampedSeconds}s",
+            details = "Location client update interval changed to ${clampedSeconds * 1000} ms"
+        )
+        _uiState.update { it.copy(geekLogs = (listOf(logEntry) + it.geekLogs).take(30)) }
+
+        appContext?.let { context ->
+            if (_uiState.value.isLocationPermissionGranted) {
+                startLocationUpdates(context)
+            }
         }
     }
 

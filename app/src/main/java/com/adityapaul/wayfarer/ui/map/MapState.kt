@@ -103,6 +103,7 @@ data class MapState(
     val themeMode: AppThemeMode = AppThemeMode.SYSTEM,
     val colorPalette: AppColorPalette = AppColorPalette.LAVENDER_PURPLE,
     val useDynamicColor: Boolean = false,
+    val locationUpdateIntervalSeconds: Int = 3,
     val isSettingsOpen: Boolean = false,
     val isGeekLogsOpen: Boolean = false,
     val geekLogs: List<GeekLogEntry> = emptyList()
