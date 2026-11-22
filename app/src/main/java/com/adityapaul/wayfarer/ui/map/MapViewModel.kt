@@ -10,6 +10,7 @@ import com.adityapaul.wayfarer.data.location.hasLocationPermission
 import com.adityapaul.wayfarer.data.route.NavigationUtils
 import com.adityapaul.wayfarer.data.route.OsrmRouteRepository
 import com.adityapaul.wayfarer.data.route.RouteRepository
+import com.adityapaul.wayfarer.data.route.TransportMode
 import com.adityapaul.wayfarer.data.search.GeocodingRepository
 import com.adityapaul.wayfarer.data.search.NominatimGeocodingRepository
 import com.adityapaul.wayfarer.data.search.RecentSearchRepository
@@ -509,12 +510,31 @@ class MapViewModel(
         }
     }
 
+    fun setTransportMode(mode: TransportMode) {
+        if (_uiState.value.routeState.transportMode == mode && _uiState.value.routeState.activeRoute != null) return
+
+        _uiState.update { currentState ->
+            currentState.copy(
+                routeState = currentState.routeState.copy(
+                    transportMode = mode
+                )
+            )
+        }
+
+        val origin = _uiState.value.routeState.origin
+        val destination = _uiState.value.routeState.destination
+        if (origin != null && destination != null) {
+            calculateRoute(origin, destination)
+        }
+    }
+
     private fun calculateRoute(origin: SearchResult, destination: SearchResult) {
+        val mode = _uiState.value.routeState.transportMode
         val param = String.format(Locale.US, "%.6f,%.6f;%.6f,%.6f", origin.longitude, origin.latitude, destination.longitude, destination.latitude)
         addGeekLog(
             GeekLogType.NET,
-            "HTTP GET router.project-osrm.org/route/v1/driving",
-            "https://router.project-osrm.org/route/v1/driving/$param?overview=full&geometries=geojson"
+            "HTTP GET router.project-osrm.org/route/v1/${mode.osrmProfile}",
+            "https://router.project-osrm.org/route/v1/${mode.osrmProfile}/$param?overview=full&geometries=geojson"
         )
 
         _uiState.update { currentState ->
@@ -535,7 +555,8 @@ class MapViewModel(
                 originLng = origin.longitude,
                 destinationName = destination.name,
                 destLat = destination.latitude,
-                destLng = destination.longitude
+                destLng = destination.longitude,
+                transportMode = mode
             )
 
             result.onSuccess { routeResult ->

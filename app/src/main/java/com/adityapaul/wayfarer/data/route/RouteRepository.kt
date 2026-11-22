@@ -12,7 +12,8 @@ interface RouteRepository {
         originLng: Double,
         destinationName: String,
         destLat: Double,
-        destLng: Double
+        destLng: Double,
+        transportMode: TransportMode = TransportMode.DRIVING
     ): Result<RouteResult>
 }
 
@@ -26,7 +27,8 @@ class OsrmRouteRepository(
         originLng: Double,
         destinationName: String,
         destLat: Double,
-        destLng: Double
+        destLng: Double,
+        transportMode: TransportMode
     ): Result<RouteResult> = withContext(Dispatchers.IO) {
         try {
             // OSRM expects coordinates in "longitude,latitude;longitude,latitude" format!
@@ -39,7 +41,10 @@ class OsrmRouteRepository(
                 destLat
             )
 
-            val response = apiService.getRoute(coordinatesParam)
+            val response = apiService.getRoute(
+                profile = transportMode.osrmProfile,
+                coordinates = coordinatesParam
+            )
 
             if (!response.isSuccessful) {
                 return@withContext Result.failure(
@@ -77,7 +82,8 @@ class OsrmRouteRepository(
                 destinationName = destinationName,
                 points = points,
                 distanceMeters = firstRoute.distanceMeters ?: 0.0,
-                durationSeconds = firstRoute.durationSeconds ?: 0.0
+                durationSeconds = firstRoute.durationSeconds ?: 0.0,
+                transportMode = transportMode
             )
 
             Result.success(result)

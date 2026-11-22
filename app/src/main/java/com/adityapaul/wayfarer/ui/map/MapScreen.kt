@@ -36,12 +36,16 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.DirectionsBike
+import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Directions
+import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Explore
+import com.adityapaul.wayfarer.data.route.TransportMode
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -336,6 +340,14 @@ fun MapScreen(
                                     )
                                 }
                             }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            // Transport Mode Selector (Drive, Walk, Cycle)
+                            TransportModeSelectorRow(
+                                selectedMode = routeState.transportMode,
+                                onSelectMode = { viewModel.setTransportMode(it) }
+                            )
 
                             Spacer(modifier = Modifier.height(12.dp))
 
@@ -893,10 +905,23 @@ fun MapScreen(
                                         }
                                     } else routeState.activeRoute?.let { route ->
                                         Column(modifier = Modifier.fillMaxWidth()) {
+                                            // Transport Mode Selector in Route Sheet
+                                            TransportModeSelectorRow(
+                                                selectedMode = routeState.transportMode,
+                                                onSelectMode = { viewModel.setTransportMode(it) }
+                                            )
+
+                                            Spacer(modifier = Modifier.height(14.dp))
+
                                             Row(
                                                 verticalAlignment = Alignment.CenterVertically,
                                                 modifier = Modifier.fillMaxWidth()
                                             ) {
+                                                val modeIcon = when (routeState.transportMode) {
+                                                    TransportMode.DRIVING -> Icons.Default.DirectionsCar
+                                                    TransportMode.WALKING -> Icons.AutoMirrored.Filled.DirectionsWalk
+                                                    TransportMode.CYCLING -> Icons.AutoMirrored.Filled.DirectionsBike
+                                                }
                                                 Surface(
                                                     shape = CircleShape,
                                                     color = MaterialTheme.colorScheme.primary,
@@ -904,8 +929,8 @@ fun MapScreen(
                                                 ) {
                                                     Box(contentAlignment = Alignment.Center) {
                                                         Icon(
-                                                            imageVector = Icons.Default.Navigation,
-                                                            contentDescription = "Navigation",
+                                                            imageVector = modeIcon,
+                                                            contentDescription = routeState.transportMode.displayName,
                                                             tint = MaterialTheme.colorScheme.onPrimary,
                                                             modifier = Modifier.size(24.dp)
                                                         )
@@ -1488,6 +1513,60 @@ fun RecentSearchItem(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(16.dp)
             )
+        }
+    }
+}
+
+@Composable
+fun TransportModeSelectorRow(
+    selectedMode: TransportMode,
+    onSelectMode: (TransportMode) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier.fillMaxWidth()
+    ) {
+        TransportMode.entries.forEach { mode ->
+            val isSelected = selectedMode == mode
+            val icon = when (mode) {
+                TransportMode.DRIVING -> Icons.Default.DirectionsCar
+                TransportMode.WALKING -> Icons.AutoMirrored.Filled.DirectionsWalk
+                TransportMode.CYCLING -> Icons.AutoMirrored.Filled.DirectionsBike
+            }
+            Surface(
+                shape = CircleShape,
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(CircleShape)
+                    .clickable { onSelectMode(mode) }
+                    .border(
+                        width = if (isSelected) 0.dp else 1.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                        shape = CircleShape
+                    )
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = mode.displayName,
+                        tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = mode.displayName,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                        color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
         }
     }
 }

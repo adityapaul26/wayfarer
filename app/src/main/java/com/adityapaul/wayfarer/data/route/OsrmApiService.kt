@@ -9,8 +9,9 @@ import retrofit2.http.Query
 
 interface OsrmApiService {
 
-    @GET("route/v1/driving/{coordinates}")
+    @GET("route/v1/{profile}/{coordinates}")
     suspend fun getRoute(
+        @Path("profile") profile: String,
         @Path("coordinates") coordinates: String,
         @Query("overview") overview: String = "full",
         @Query("geometries") geometries: String = "geojson"

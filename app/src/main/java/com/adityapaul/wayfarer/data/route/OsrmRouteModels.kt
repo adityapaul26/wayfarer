@@ -21,12 +21,23 @@ data class OsrmGeometry(
     @SerializedName("type") val type: String?
 )
 
+enum class TransportMode(
+    val id: String,
+    val displayName: String,
+    val osrmProfile: String
+) {
+    DRIVING("driving", "Drive", "driving"),
+    WALKING("walking", "Walk", "walking"),
+    CYCLING("cycling", "Cycle", "bike")
+}
+
 data class RouteResult(
     val originName: String,
     val destinationName: String,
     val points: List<LatLng>,
     val distanceMeters: Double,
-    val durationSeconds: Double
+    val durationSeconds: Double,
+    val transportMode: TransportMode = TransportMode.DRIVING
 ) {
     fun formattedDistance(): String {
         return if (distanceMeters >= 1000) {

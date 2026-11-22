@@ -3,6 +3,7 @@ package com.adityapaul.wayfarer.ui.map
 import android.location.Location
 import android.os.Build
 import com.adityapaul.wayfarer.data.route.RouteResult
+import com.adityapaul.wayfarer.data.route.TransportMode
 import com.adityapaul.wayfarer.data.search.SearchResult
 import com.adityapaul.wayfarer.ui.theme.AppColorPalette
 import com.adityapaul.wayfarer.ui.theme.AppThemeMode
@@ -70,6 +71,7 @@ data class RouteState(
     val step: RouteSelectionStep = RouteSelectionStep.NONE,
     val origin: SearchResult? = null,
     val destination: SearchResult? = null,
+    val transportMode: TransportMode = TransportMode.DRIVING,
     val isCalculatingRoute: Boolean = false,
     val activeRoute: RouteResult? = null,
     val routeError: String? = null,

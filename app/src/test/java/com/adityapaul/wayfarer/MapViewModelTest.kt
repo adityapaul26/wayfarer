@@ -348,6 +348,31 @@ class MapViewModelTest {
         viewModel.setLocationUpdateInterval(10)
         assertEquals(8, viewModel.uiState.value.locationUpdateIntervalSeconds)
     }
+
+    @Test
+    fun setTransportMode_recalculatesRouteWithNewProfile() = runTest {
+        val origin = SearchResult(1L, "Howrah Bridge", "H", null, 22.5851, 88.3468)
+        val destination = SearchResult(2L, "Victoria Memorial", "V", null, 22.5448, 88.3425)
+
+        fakeRouteRepository.routeResult = Result.success(
+            RouteResult("Howrah Bridge", "Victoria Memorial", listOf(LatLng(22.5851, 88.3468), LatLng(22.5448, 88.3425)), 5400.0, 720.0, com.adityapaul.wayfarer.data.route.TransportMode.DRIVING)
+        )
+
+        viewModel.startRoutePlanning()
+        viewModel.selectOrigin(origin)
+        viewModel.selectDestination(destination)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(com.adityapaul.wayfarer.data.route.TransportMode.DRIVING, viewModel.uiState.value.routeState.transportMode)
+        assertEquals(com.adityapaul.wayfarer.data.route.TransportMode.DRIVING, fakeRouteRepository.lastRequestedTransportMode)
+
+        // Switch to WALKING
+        viewModel.setTransportMode(com.adityapaul.wayfarer.data.route.TransportMode.WALKING)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(com.adityapaul.wayfarer.data.route.TransportMode.WALKING, viewModel.uiState.value.routeState.transportMode)
+        assertEquals(com.adityapaul.wayfarer.data.route.TransportMode.WALKING, fakeRouteRepository.lastRequestedTransportMode)
+    }
 }
 
 private class FakeGeocodingRepository : GeocodingRepository {
@@ -360,6 +385,7 @@ private class FakeGeocodingRepository : GeocodingRepository {
 
 private class FakeRouteRepository : RouteRepository {
     var routeResult: Result<RouteResult> = Result.failure(Exception("Not set"))
+    var lastRequestedTransportMode: com.adityapaul.wayfarer.data.route.TransportMode? = null
 
     override suspend fun calculateRoute(
         originName: String,
@@ -367,8 +393,10 @@ private class FakeRouteRepository : RouteRepository {
         originLng: Double,
         destinationName: String,
         destLat: Double,
-        destLng: Double
+        destLng: Double,
+        transportMode: com.adityapaul.wayfarer.data.route.TransportMode
     ): Result<RouteResult> {
+        lastRequestedTransportMode = transportMode
         return routeResult
     }
 }
