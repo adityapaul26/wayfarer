@@ -122,6 +122,7 @@ fun MapScreen(
     }
 
     LaunchedEffect(Unit) {
+        viewModel.initUserPreferences(context)
         viewModel.checkAndStartLocation(context)
         viewModel.initRecentSearchRepository(context)
     }

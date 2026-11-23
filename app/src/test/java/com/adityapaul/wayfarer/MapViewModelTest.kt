@@ -373,6 +373,52 @@ class MapViewModelTest {
         assertEquals(com.adityapaul.wayfarer.data.route.TransportMode.WALKING, viewModel.uiState.value.routeState.transportMode)
         assertEquals(com.adityapaul.wayfarer.data.route.TransportMode.WALKING, fakeRouteRepository.lastRequestedTransportMode)
     }
+
+    @Test
+    fun userPreferences_areSavedAndLoadedPersistently() {
+        val fakePrefsRepo = FakeUserPreferencesRepository()
+        val testViewModel = MapViewModel(
+            geocodingRepository = fakeGeocodingRepository,
+            routeRepository = fakeRouteRepository,
+            userPreferencesRepository = fakePrefsRepo
+        )
+
+        testViewModel.setThemeMode(com.adityapaul.wayfarer.ui.theme.AppThemeMode.DARK)
+        testViewModel.setColorPalette(com.adityapaul.wayfarer.ui.theme.AppColorPalette.EMERALD_MINT)
+        testViewModel.toggleDynamicColor(true)
+        testViewModel.setLocationUpdateInterval(6)
+
+        assertEquals(com.adityapaul.wayfarer.ui.theme.AppThemeMode.DARK, fakePrefsRepo.preferences.themeMode)
+        assertEquals(com.adityapaul.wayfarer.ui.theme.AppColorPalette.EMERALD_MINT, fakePrefsRepo.preferences.colorPalette)
+        assertTrue(fakePrefsRepo.preferences.useDynamicColor)
+        assertEquals(6, fakePrefsRepo.preferences.locationUpdateIntervalSeconds)
+    }
+}
+
+private class FakeUserPreferencesRepository : com.adityapaul.wayfarer.data.settings.UserPreferencesRepository {
+    var preferences = com.adityapaul.wayfarer.data.settings.UserPreferences()
+
+    override fun getUserPreferences(): com.adityapaul.wayfarer.data.settings.UserPreferences = preferences
+
+    override fun saveThemeMode(themeMode: com.adityapaul.wayfarer.ui.theme.AppThemeMode) {
+        preferences = preferences.copy(themeMode = themeMode)
+    }
+
+    override fun saveColorPalette(colorPalette: com.adityapaul.wayfarer.ui.theme.AppColorPalette) {
+        preferences = preferences.copy(colorPalette = colorPalette)
+    }
+
+    override fun saveUseDynamicColor(useDynamicColor: Boolean) {
+        preferences = preferences.copy(useDynamicColor = useDynamicColor)
+    }
+
+    override fun saveLocationUpdateIntervalSeconds(intervalSeconds: Int) {
+        preferences = preferences.copy(locationUpdateIntervalSeconds = intervalSeconds)
+    }
+
+    override fun saveMapStyleType(mapStyleType: MapStyleType) {
+        preferences = preferences.copy(mapStyleType = mapStyleType)
+    }
 }
 
 private class FakeGeocodingRepository : GeocodingRepository {

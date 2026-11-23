@@ -16,6 +16,8 @@ import com.adityapaul.wayfarer.data.search.NominatimGeocodingRepository
 import com.adityapaul.wayfarer.data.search.RecentSearchRepository
 import com.adityapaul.wayfarer.data.search.SearchResult
 import com.adityapaul.wayfarer.data.search.SharedPreferencesRecentSearchRepository
+import com.adityapaul.wayfarer.data.settings.SharedPreferencesUserPreferencesRepository
+import com.adityapaul.wayfarer.data.settings.UserPreferencesRepository
 import com.adityapaul.wayfarer.ui.theme.AppColorPalette
 import com.adityapaul.wayfarer.ui.theme.AppThemeMode
 import org.maplibre.android.geometry.LatLng
@@ -35,7 +37,8 @@ import java.util.Locale
 
 class MapViewModel(
     private val geocodingRepository: GeocodingRepository = NominatimGeocodingRepository(),
-    private val routeRepository: RouteRepository = OsrmRouteRepository()
+    private val routeRepository: RouteRepository = OsrmRouteRepository(),
+    private var userPreferencesRepository: UserPreferencesRepository? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MapState())
@@ -46,6 +49,25 @@ class MapViewModel(
     private var locationJob: Job? = null
     private var searchJob: Job? = null
     private var routeJob: Job? = null
+
+    fun initUserPreferences(context: Context) {
+        if (userPreferencesRepository == null) {
+            val repo = SharedPreferencesUserPreferencesRepository(context.applicationContext)
+            userPreferencesRepository = repo
+        }
+        userPreferencesRepository?.let { repo ->
+            val prefs = repo.getUserPreferences()
+            _uiState.update { currentState ->
+                currentState.copy(
+                    themeMode = prefs.themeMode,
+                    colorPalette = prefs.colorPalette,
+                    useDynamicColor = prefs.useDynamicColor,
+                    locationUpdateIntervalSeconds = prefs.locationUpdateIntervalSeconds,
+                    styleType = prefs.mapStyleType
+                )
+            }
+        }
+    }
 
     fun checkAndStartLocation(context: Context) {
         val hasPermission = hasLocationPermission(context)
@@ -155,18 +177,20 @@ class MapViewModel(
     }
 
     fun setStyleType(styleType: MapStyleType) {
+        userPreferencesRepository?.saveMapStyleType(styleType)
         _uiState.update { currentState ->
             currentState.copy(styleType = styleType)
         }
     }
 
     fun toggleStyle() {
+        val nextStyle = when (_uiState.value.styleType) {
+            MapStyleType.LIGHT -> MapStyleType.DARK
+            MapStyleType.DARK -> MapStyleType.LIBRE
+            MapStyleType.LIBRE -> MapStyleType.LIGHT
+        }
+        userPreferencesRepository?.saveMapStyleType(nextStyle)
         _uiState.update { currentState ->
-            val nextStyle = when (currentState.styleType) {
-                MapStyleType.LIGHT -> MapStyleType.DARK
-                MapStyleType.DARK -> MapStyleType.LIBRE
-                MapStyleType.LIBRE -> MapStyleType.LIGHT
-            }
             currentState.copy(styleType = nextStyle)
         }
     }
@@ -736,6 +760,7 @@ class MapViewModel(
     }
 
     fun setThemeMode(themeMode: AppThemeMode) {
+        userPreferencesRepository?.saveThemeMode(themeMode)
         _uiState.update { currentState ->
             val correspondingStyle = when (themeMode) {
                 AppThemeMode.DARK -> MapStyleType.DARK
@@ -750,12 +775,14 @@ class MapViewModel(
     }
 
     fun setColorPalette(palette: AppColorPalette) {
+        userPreferencesRepository?.saveColorPalette(palette)
         _uiState.update { currentState ->
             currentState.copy(colorPalette = palette)
         }
     }
 
     fun toggleDynamicColor(enabled: Boolean) {
+        userPreferencesRepository?.saveUseDynamicColor(enabled)
         _uiState.update { currentState ->
             currentState.copy(useDynamicColor = enabled)
         }
@@ -763,6 +790,7 @@ class MapViewModel(
 
     fun setLocationUpdateInterval(seconds: Int) {
         val clampedSeconds = seconds.coerceIn(1, 8)
+        userPreferencesRepository?.saveLocationUpdateIntervalSeconds(clampedSeconds)
         _uiState.update { currentState ->
             currentState.copy(locationUpdateIntervalSeconds = clampedSeconds)
         }
