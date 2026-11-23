@@ -121,8 +121,10 @@ fun MapScreen(
         viewModel.onPermissionResult(isGranted, context)
     }
 
-    LaunchedEffect(Unit) {
-        viewModel.initUserPreferences(context)
+    val isSystemDark = androidx.compose.foundation.isSystemInDarkTheme()
+
+    LaunchedEffect(isSystemDark) {
+        viewModel.initUserPreferences(context, isSystemDark)
         viewModel.checkAndStartLocation(context)
         viewModel.initRecentSearchRepository(context)
     }

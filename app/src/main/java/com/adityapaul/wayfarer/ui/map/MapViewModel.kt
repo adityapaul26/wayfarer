@@ -50,20 +50,25 @@ class MapViewModel(
     private var searchJob: Job? = null
     private var routeJob: Job? = null
 
-    fun initUserPreferences(context: Context) {
+    fun initUserPreferences(context: Context, isSystemDark: Boolean = false) {
         if (userPreferencesRepository == null) {
             val repo = SharedPreferencesUserPreferencesRepository(context.applicationContext)
             userPreferencesRepository = repo
         }
         userPreferencesRepository?.let { repo ->
             val prefs = repo.getUserPreferences()
+            val initialStyle = when (prefs.themeMode) {
+                AppThemeMode.DARK -> MapStyleType.DARK
+                AppThemeMode.LIGHT -> MapStyleType.LIGHT
+                AppThemeMode.SYSTEM -> if (isSystemDark) MapStyleType.DARK else prefs.mapStyleType
+            }
             _uiState.update { currentState ->
                 currentState.copy(
                     themeMode = prefs.themeMode,
                     colorPalette = prefs.colorPalette,
                     useDynamicColor = prefs.useDynamicColor,
                     locationUpdateIntervalSeconds = prefs.locationUpdateIntervalSeconds,
-                    styleType = prefs.mapStyleType
+                    styleType = initialStyle
                 )
             }
         }
@@ -759,14 +764,15 @@ class MapViewModel(
         }
     }
 
-    fun setThemeMode(themeMode: AppThemeMode) {
+    fun setThemeMode(themeMode: AppThemeMode, isSystemDark: Boolean = false) {
         userPreferencesRepository?.saveThemeMode(themeMode)
         _uiState.update { currentState ->
             val correspondingStyle = when (themeMode) {
                 AppThemeMode.DARK -> MapStyleType.DARK
                 AppThemeMode.LIGHT -> MapStyleType.LIGHT
-                AppThemeMode.SYSTEM -> currentState.styleType
+                AppThemeMode.SYSTEM -> if (isSystemDark) MapStyleType.DARK else MapStyleType.LIGHT
             }
+            userPreferencesRepository?.saveMapStyleType(correspondingStyle)
             currentState.copy(
                 themeMode = themeMode,
                 styleType = correspondingStyle

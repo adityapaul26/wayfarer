@@ -4,6 +4,7 @@ import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -168,6 +169,7 @@ fun SettingsScreen(
                     modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
                 )
 
+                val isSystemDark = isSystemInDarkTheme()
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
@@ -180,7 +182,7 @@ fun SettingsScreen(
                             modifier = Modifier
                                 .weight(1f)
                                 .clip(RoundedCornerShape(16.dp))
-                                .clickable { viewModel.setThemeMode(mode) }
+                                .clickable { viewModel.setThemeMode(mode, isSystemDark) }
                                 .border(
                                     width = if (isSelected) 0.dp else 1.dp,
                                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
@@ -493,7 +495,7 @@ fun SettingsScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "Wayfarer Maps v1.0.0",
+                        text = "Wayfarer Maps v1.1.0",
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant

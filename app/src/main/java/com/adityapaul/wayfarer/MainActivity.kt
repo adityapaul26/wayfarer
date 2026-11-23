@@ -4,12 +4,17 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -25,9 +30,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             val viewModel: MapViewModel = viewModel()
             val context = LocalContext.current
+            val isSystemDark = isSystemInDarkTheme()
 
-            LaunchedEffect(Unit) {
-                viewModel.initUserPreferences(context)
+            LaunchedEffect(isSystemDark) {
+                viewModel.initUserPreferences(context, isSystemDark)
             }
 
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -37,20 +43,18 @@ class MainActivity : ComponentActivity() {
                 palette = uiState.colorPalette,
                 useDynamicColor = uiState.useDynamicColor
             ) {
-                AnimatedContent(
-                    targetState = uiState.isSettingsOpen,
-                    transitionSpec = {
-                        fadeIn() togetherWith fadeOut()
-                    },
-                    label = "ScreenNavigation"
-                ) { isSettings ->
-                    if (isSettings) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    MapScreen(viewModel = viewModel)
+
+                    AnimatedVisibility(
+                        visible = uiState.isSettingsOpen,
+                        enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
+                        exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
+                    ) {
                         SettingsScreen(
                             viewModel = viewModel,
                             onBackClick = { viewModel.toggleSettings() }
                         )
-                    } else {
-                        MapScreen(viewModel = viewModel)
                     }
                 }
             }
