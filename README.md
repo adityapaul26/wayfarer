@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🗺️ Wayfarer
+# Wayfarer
 
 ### *Next-Generation Native Android Vector Maps & Turn-by-Turn Navigation*
 
@@ -18,48 +18,48 @@
 
 </div>
 
-## 🌟 Key Highlights
+## Key Highlights
 
-- 🚗🚶🚴 **Multi-Transport Mode Navigation**: Calculate routes tailored specifically for **Driving**, **Walking**, or **Cycling** with live ETAs, geometry line rendering, and map-matching.
-- ⚙️ **Dedicated Settings & Appearance Page**: Seamless animated full-screen navigation to customize app themes, dynamic colors, accent palettes, and location settings.
-- ⚡ **Adaptive GPS Refresh Rate Control**: Adjust position updates dynamically from **1 second (High Accuracy)** to **8 seconds (Battery Saver)** via a dedicated M3 slider.
-- 🎨 **Material You & Custom Accent Palettes**: Full dark/light/system theme support with Material You wallpaper dynamic colors and 6 curated accent color palettes (*Lavender Purple, Emerald Mint, Sunset Coral, Royal Violet, Amber Sand, Cyan Ocean*).
-- 🤓 **Developer Telemetry ("Logs for Geeks")**: Built-in real-time telemetry log window monitoring HTTP REST requests, GPS satellite metrics, and OSRM route parameters.
-- 🔒 **Privacy-First Architecture**: Zero external tracking or location telemetry uploads. All GPS fixes, route math, and map rendering happen 100% locally on your device.
+- **Multi-Transport Mode Navigation**: Calculate routes tailored specifically for **Driving**, **Walking**, or **Cycling** with live ETAs, geometry line rendering, and map-matching.
+- **Dedicated Settings & Appearance Page**: Seamless animated full-screen navigation to customize app themes, dynamic colors, accent palettes, and location settings.
+- **Adaptive GPS Refresh Rate Control**: Adjust position updates dynamically from **1 second (High Accuracy)** to **8 seconds (Battery Saver)** via a dedicated M3 slider.
+- **Material You & Custom Accent Palettes**: Full dark/light/system theme support with Material You wallpaper dynamic colors and 6 curated accent color palettes (*Lavender Purple, Emerald Mint, Sunset Coral, Royal Violet, Amber Sand, Cyan Ocean*).
+- **Developer Telemetry ("Logs for Geeks")**: Built-in real-time telemetry log window monitoring HTTP REST requests, GPS satellite metrics, and OSRM route parameters.
+- **Privacy-First Architecture**: Zero external tracking or location telemetry uploads. All GPS fixes, route math, and map rendering happen 100% locally on your device.
 
 ---
 
-## ✨ Features
+## Features
 
-### 🗺️ Vector Maps & Styles
+### Vector Maps & Styles
 - Powered by **MapLibre GL Native Android SDK** (`v13.7.1`) and **OpenStreetMap**.
 - One-tap style switching between **Light** (CARTO Positron), **Dark** (CARTO Dark Matter), and **Libre** vector map tiles.
 - Smooth gesture panning, pinch-to-zoom, and automatic route bounding box camera adjustments (`LatLngBounds`).
 
-### 🚗🚶🚴 Multi-Transport Route Planning
+### Multi-Transport Route Planning
 - Multi-step route planning (Select Origin $\rightarrow$ Select Destination $\rightarrow$ Generate Route).
 - Supports **Driving (Car)**, **Walking (Foot)**, and **Cycling (Bike)** profiles via the OSRM REST API.
 - Instant mode switching directly from the active route sheet to compare travel times across modes.
 - Real-time navigation state tracking with map-matching, traveled vs. remaining distance, remaining duration, and automatic off-route detection.
 
-### 🔍 Search & Geocoding
+### Search & Geocoding
 - Global geocoding and landmark search powered by OpenStreetMap's **Nominatim API**.
 - Local search history persistence with instant recent search recall and one-tap removal.
 - Selected place pin annotations with custom bottom sheet details.
 
-### ⚙️ Comprehensive Settings & Personalization
+### Comprehensive Settings & Personalization
 - Dedicated full-screen **Settings** page accessible with smooth screen transition animations.
 - **Theme Mode**: System Default, Light Mode, Dark Mode.
 - **Dynamic Color**: Material You wallpaper-matching on Android 12+ (API 31+).
 - **GPS Refresh Rate Slider**: Customize hardware position updates between **1s** (maximum responsiveness) and **8s** (battery saving).
 - **Accent Color Palettes**: Pick between 6 custom Material 3 color palettes.
 
-### 🤓 Developer Telemetry Stream
+### Developer Telemetry Stream
 - Dedicated **Logs for Geeks** window streaming live network HTTP GET calls, GPS satellite fixes, map camera idle events, and OSRM geometry parameters.
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 | Layer | Technology / Library |
 | :--- | :--- |
@@ -74,7 +74,7 @@
 
 ---
 
-## 📐 Architecture
+## Architecture
 
 Wayfarer strictly follows modern Android **MVVM (Model-View-ViewModel)** and **Unidirectional Data Flow (UDF)** guidelines:
 
@@ -116,7 +116,7 @@ Wayfarer strictly follows modern Android **MVVM (Model-View-ViewModel)** and **U
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -150,7 +150,7 @@ Wayfarer strictly follows modern Android **MVVM (Model-View-ViewModel)** and **U
 
 ---
 
-## 🧪 Testing
+## Testing
 
 Wayfarer includes a comprehensive unit test suite (`MapViewModelTest.kt`) verifying core business logic:
 - Initial state verification
@@ -164,7 +164,7 @@ Wayfarer includes a comprehensive unit test suite (`MapViewModelTest.kt`) verify
 
 ---
 
-## 📄 Attributions & Acknowledgments
+## Attributions & Acknowledgments
 
 - **Map Data**: © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors.
 - **Vector Tile Services**: © [CARTO](https://carto.com/) & [MapLibre](https://maplibre.org/).
