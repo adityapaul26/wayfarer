@@ -3,7 +3,7 @@ package com.adityapaul.wayfarer.ui.map.components
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -58,10 +58,9 @@ fun RoutePreviewSheet(
     val isCollapsed = routeState.isCollapsed
 
     Surface(
-        shape = if (isCollapsed) CircleShape else RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 24.dp, bottomEnd = 24.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant,
-        tonalElevation = 4.dp,
-        shadowElevation = 6.dp,
+        shape = if (isCollapsed) CircleShape else RoundedCornerShape(28.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHighest,
+        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant),
         modifier = modifier
             .padding(horizontal = 16.dp)
             .fillMaxWidth()
@@ -70,11 +69,6 @@ fun RoutePreviewSheet(
                     dampingRatio = Spring.DampingRatioLowBouncy,
                     stiffness = Spring.StiffnessMedium
                 )
-            )
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
-                shape = if (isCollapsed) CircleShape else RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
             )
     ) {
         if (isCollapsed && routeState.activeRoute != null) {
@@ -101,15 +95,15 @@ fun RoutePreviewSheet(
             ) {
                 Surface(
                     shape = CircleShape,
-                    color = if (routeState.navigationState.isNavigating) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier.size(36.dp)
+                    color = if (routeState.navigationState.isNavigating) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.size(38.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = Icons.Default.Navigation,
                             contentDescription = "Navigation",
-                            tint = if (routeState.navigationState.isNavigating) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.size(18.dp)
+                            tint = if (routeState.navigationState.isNavigating) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
@@ -119,13 +113,13 @@ fun RoutePreviewSheet(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "$displayDuration • $displayDistance",
-                        style = MaterialTheme.typography.titleSmall,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = route.destinationName,
-                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -134,7 +128,7 @@ fun RoutePreviewSheet(
 
                 IconButton(
                     onClick = onExpandSheet,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(36.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowUp,
@@ -149,7 +143,7 @@ fun RoutePreviewSheet(
                 modifier = Modifier.padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Interactive Drag Handle Row (Tap to collapse)
+                // Drag handle pill
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
@@ -183,18 +177,18 @@ fun RoutePreviewSheet(
                         horizontalArrangement = Arrangement.Center,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 12.dp)
+                            .padding(vertical = 16.dp)
                     ) {
                         CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            strokeWidth = 2.5.dp,
+                            modifier = Modifier.size(28.dp),
+                            strokeWidth = 3.dp,
                             color = MaterialTheme.colorScheme.primary
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
+                        Spacer(modifier = Modifier.width(14.dp))
                         Text(
                             text = "Calculating OSRM route...",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Medium
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 } else routeState.activeRoute?.let { route ->
@@ -205,89 +199,134 @@ fun RoutePreviewSheet(
                             onSelectMode = onTransportModeSelected
                         )
 
-                        Spacer(modifier = Modifier.height(14.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            val modeIcon = when (routeState.transportMode) {
-                                TransportMode.DRIVING -> Icons.Default.DirectionsCar
-                                TransportMode.WALKING -> Icons.AutoMirrored.Filled.DirectionsWalk
-                                TransportMode.CYCLING -> Icons.AutoMirrored.Filled.DirectionsBike
-                            }
+                        // Stacked Expressive Route Cards
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            // Secondary Alternative Card peeking out behind
                             Surface(
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(48.dp)
+                                shape = RoundedCornerShape(28.dp),
+                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 10.dp, start = 10.dp, end = 10.dp)
+                                    .height(110.dp)
                             ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        imageVector = modeIcon,
-                                        contentDescription = routeState.transportMode.displayName,
-                                        tint = MaterialTheme.colorScheme.onPrimary,
-                                        modifier = Modifier.size(24.dp)
+                                Row(
+                                    verticalAlignment = Alignment.Bottom,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                                ) {
+                                    Text(
+                                        text = "Alternative Route Available",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             }
 
-                            Spacer(modifier = Modifier.width(14.dp))
+                            // Primary Selected Route Card (High contrast Acid Lime / Primary)
+                            Surface(
+                                shape = RoundedCornerShape(28.dp),
+                                color = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(18.dp)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        val modeIcon = when (routeState.transportMode) {
+                                            TransportMode.DRIVING -> Icons.Default.DirectionsCar
+                                            TransportMode.WALKING -> Icons.AutoMirrored.Filled.DirectionsWalk
+                                            TransportMode.CYCLING -> Icons.AutoMirrored.Filled.DirectionsBike
+                                        }
 
-                            Column(modifier = Modifier.weight(1f)) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                        // Badge Icon
+                                        Surface(
+                                            shape = CircleShape,
+                                            color = MaterialTheme.colorScheme.onSecondary,
+                                            modifier = Modifier.size(38.dp)
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Icon(
+                                                    imageVector = modeIcon,
+                                                    contentDescription = routeState.transportMode.displayName,
+                                                    tint = MaterialTheme.colorScheme.secondary,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            }
+                                        }
+
+                                        Spacer(modifier = Modifier.width(10.dp))
+
+                                        // Pill Badges for Distance and Route Tag
+                                        Surface(
+                                            shape = CircleShape,
+                                            color = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.15f)
+                                        ) {
+                                            Text(
+                                                text = "${route.formattedDistance()} • Fastest Route",
+                                                style = MaterialTheme.typography.labelMedium.copy(
+                                                    fontFeatureSettings = "tnum"
+                                                ),
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.onSecondary,
+                                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                                            )
+                                        }
+
+                                        Spacer(modifier = Modifier.weight(1f))
+
+                                        IconButton(
+                                            onClick = onClearRoute,
+                                            modifier = Modifier.size(32.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Close,
+                                                contentDescription = "Clear Route",
+                                                tint = MaterialTheme.colorScheme.onSecondary
+                                            )
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.height(8.dp))
+
+                                    // Oversized 44.sp Extra-Bold Display Duration
                                     val displayDuration = if (routeState.navigationState.isNavigating) {
                                         routeState.navigationState.formattedRemainingDuration()
                                     } else {
                                         route.formattedDuration()
                                     }
-                                    val displayDistance = if (routeState.navigationState.isNavigating) {
-                                        routeState.navigationState.formattedRemainingDistance()
-                                    } else {
-                                        route.formattedDistance()
-                                    }
 
                                     Text(
                                         text = displayDuration,
-                                        style = MaterialTheme.typography.headlineSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (routeState.navigationState.isNavigating) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
+                                        fontSize = 44.sp,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        letterSpacing = (-1.5).sp,
+                                        color = MaterialTheme.colorScheme.onSecondary,
+                                        modifier = Modifier.padding(vertical = 2.dp)
                                     )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Surface(
-                                        shape = RoundedCornerShape(8.dp),
-                                        color = MaterialTheme.colorScheme.tertiaryContainer
-                                    ) {
-                                        Text(
-                                            text = displayDistance,
-                                            style = MaterialTheme.typography.labelMedium,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.onTertiaryContainer,
-                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                                        )
-                                    }
-                                }
-                                Text(
-                                    text = "${route.originName} → ${route.destinationName}",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.padding(top = 2.dp)
-                                )
-                            }
 
-                            IconButton(onClick = onClearRoute) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = "Clear Route",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                    Text(
+                                        text = "${route.originName} → ${route.destinationName}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.85f),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(20.dp))
 
-                        // Prominent M3 Button: Start / Stop Live Navigation
+                        // Full-width 60.dp Tall Pill CTA Button
                         Button(
                             onClick = {
                                 if (routeState.navigationState.isNavigating) {
@@ -301,17 +340,19 @@ fun RoutePreviewSheet(
                                 containerColor = if (routeState.navigationState.isNavigating) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                                 contentColor = if (routeState.navigationState.isNavigating) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onPrimary
                             ),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(60.dp)
                         ) {
                             Icon(
                                 imageVector = if (routeState.navigationState.isNavigating) Icons.Default.Close else Icons.Default.Navigation,
                                 contentDescription = if (routeState.navigationState.isNavigating) "Stop Navigation" else "Start Navigation",
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(22.dp)
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(10.dp))
                             Text(
                                 text = if (routeState.navigationState.isNavigating) "Stop Live Navigation" else "Start Live Navigation",
-                                style = MaterialTheme.typography.titleSmall,
+                                style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
                         }
