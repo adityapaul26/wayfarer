@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -32,10 +33,10 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.DirectionsCar
-import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SwapVert
@@ -96,45 +97,38 @@ fun SearchOverlay(
 
     Column(modifier = modifier.fillMaxWidth()) {
         if (routeState.step == RouteSelectionStep.NONE) {
-            // Material 3 Floating SearchBar Pill with Soft Lavender Accent Border
+            // Material 3 Expressive Floating SearchBar Pill Capsule (58.dp height, CircleShape, surfaceContainerHighest, 1.5.dp border)
             Surface(
                 shape = CircleShape,
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                tonalElevation = 3.dp,
-                shadowElevation = 4.dp,
+                color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
-                        shape = CircleShape
-                    )
+                    .height(58.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                        .padding(horizontal = 10.dp)
                 ) {
-                    // M3 Brand Logo Avatar Badge
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .padding(start = 2.dp)
+                    // Left Icon: Menu / Search Button
+                    IconButton(
+                        onClick = {
+                            keyboardController?.hide()
+                            onSubmitSearch()
+                        },
+                        modifier = Modifier.size(42.dp)
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = Icons.Default.Explore,
-                                contentDescription = "Wayfarer Logo",
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.size(22.dp)
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = "Menu",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(22.dp)
+                        )
                     }
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
 
                     OutlinedTextField(
                         value = searchState.query,
@@ -142,7 +136,7 @@ fun SearchOverlay(
                         placeholder = {
                             Text(
                                 text = "Search places, roads, landmarks...",
-                                style = MaterialTheme.typography.bodyMedium,
+                                style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                             )
                         },
@@ -156,7 +150,9 @@ fun SearchOverlay(
                         ),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.Transparent,
-                            unfocusedBorderColor = Color.Transparent
+                            unfocusedBorderColor = Color.Transparent,
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent
                         ),
                         modifier = Modifier
                             .weight(1f)
@@ -169,7 +165,7 @@ fun SearchOverlay(
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         if (searchState.query.isNotEmpty()) {
                             IconButton(
@@ -184,55 +180,34 @@ fun SearchOverlay(
                             }
                         }
 
-                        FilledIconButton(
-                            onClick = {
-                                keyboardController?.hide()
-                                onSubmitSearch()
-                            },
-                            colors = IconButtonDefaults.filledIconButtonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            ),
-                            modifier = Modifier.size(40.dp)
+                        // Circular Action / Avatar Button (42.dp, tonal primary container)
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            modifier = Modifier
+                                .size(42.dp)
+                                .clip(CircleShape)
+                                .clickable { onStartRoutePlanning() }
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = "Submit Search",
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-
-                        FilledTonalIconButton(
-                            onClick = onStartRoutePlanning,
-                            colors = IconButtonDefaults.filledTonalIconButtonColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                            ),
-                            modifier = Modifier.size(40.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Directions,
-                                contentDescription = "Directions",
-                                modifier = Modifier.size(20.dp)
-                            )
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.Directions,
+                                    contentDescription = "Directions",
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                         }
                     }
                 }
             }
         } else {
-            // Material 3 Multi-Step Route Planning Panel
+            // Material 3 Expressive Multi-Step Route Planning Panel (28.dp rounded card, surfaceContainerHighest)
             Surface(
                 shape = RoundedCornerShape(28.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                tonalElevation = 4.dp,
-                shadowElevation = 6.dp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
-                        shape = RoundedCornerShape(28.dp)
-                    )
+                color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant),
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(
@@ -276,7 +251,7 @@ fun SearchOverlay(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Transport Mode Selector (Drive, Walk, Cycle)
+                    // Transport Mode Selector (Pill-shaped Category Chips)
                     TransportModeSelectorRow(
                         selectedMode = routeState.transportMode,
                         onSelectMode = onTransportModeSelected
@@ -286,11 +261,11 @@ fun SearchOverlay(
 
                     // Interactive Origin Card
                     Surface(
-                        shape = RoundedCornerShape(16.dp),
-                        color = if (routeState.step == RouteSelectionStep.SELECT_ORIGIN) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+                        shape = RoundedCornerShape(18.dp),
+                        color = if (routeState.step == RouteSelectionStep.SELECT_ORIGIN) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainer,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(18.dp))
                             .clickable { onClearOrigin() }
                     ) {
                         Row(
@@ -339,11 +314,11 @@ fun SearchOverlay(
 
                     // Interactive Destination Card
                     Surface(
-                        shape = RoundedCornerShape(16.dp),
-                        color = if (routeState.step == RouteSelectionStep.SELECT_DEST) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.surface,
+                        shape = RoundedCornerShape(18.dp),
+                        color = if (routeState.step == RouteSelectionStep.SELECT_DEST) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.surfaceContainer,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(18.dp))
                             .clickable { onClearDestination() }
                     ) {
                         Row(
@@ -465,7 +440,7 @@ fun SearchOverlay(
                                 onSubmitSearch()
                             }
                         ),
-                        shape = RoundedCornerShape(16.dp),
+                        shape = CircleShape,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.outline
@@ -482,7 +457,7 @@ fun SearchOverlay(
             }
         }
 
-        // Material 3 Search Results / Recent Searches Dropdown Panel
+        // Material 3 Expressive Search Results / Recent Searches Dropdown Panel (28.dp rounded card)
         val shouldShowDropdown = searchState.isSearching ||
                 searchState.errorMessage != null ||
                 searchState.results.isNotEmpty() ||
@@ -494,19 +469,13 @@ fun SearchOverlay(
             exit = fadeOut() + slideOutVertically()
         ) {
             Surface(
-                shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                tonalElevation = 4.dp,
-                shadowElevation = 6.dp,
+                shape = RoundedCornerShape(28.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp)
                     .heightIn(max = 300.dp)
-                    .border(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
-                        shape = RoundedCornerShape(24.dp)
-                    )
             ) {
                 Box(
                     modifier = Modifier
@@ -641,7 +610,7 @@ fun SearchResultItem(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(16.dp))
             .clickable { onClick() }
             .padding(vertical = 10.dp, horizontal = 8.dp)
     ) {
@@ -674,14 +643,14 @@ fun SearchResultItem(
                 result.category?.let { cat ->
                     Spacer(modifier = Modifier.width(6.dp))
                     Surface(
-                        shape = RoundedCornerShape(6.dp),
+                        shape = CircleShape,
                         color = MaterialTheme.colorScheme.secondaryContainer
                     ) {
                         Text(
                             text = cat,
                             style = MaterialTheme.typography.labelMedium.copy(fontSize = 10.sp),
                             color = MaterialTheme.colorScheme.onSecondaryContainer,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                         )
                     }
                 }
@@ -708,7 +677,7 @@ fun RecentSearchItem(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(16.dp))
             .clickable { onClick() }
             .padding(vertical = 8.dp, horizontal = 8.dp)
     ) {
@@ -778,7 +747,7 @@ fun TransportModeSelectorRow(
             }
             Surface(
                 shape = CircleShape,
-                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                color = if (isSelected) MaterialTheme.colorScheme.inverseSurface else MaterialTheme.colorScheme.surfaceContainer,
                 modifier = Modifier
                     .weight(1f)
                     .clip(CircleShape)
@@ -792,20 +761,20 @@ fun TransportModeSelectorRow(
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.padding(vertical = 8.dp)
+                    modifier = Modifier.padding(vertical = 10.dp)
                 ) {
                     Icon(
                         imageVector = icon,
                         contentDescription = mode.displayName,
-                        tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = if (isSelected) MaterialTheme.colorScheme.inverseOnSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = mode.displayName,
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MaterialTheme.typography.labelLarge,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                        color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                        color = if (isSelected) MaterialTheme.colorScheme.inverseOnSurface else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
