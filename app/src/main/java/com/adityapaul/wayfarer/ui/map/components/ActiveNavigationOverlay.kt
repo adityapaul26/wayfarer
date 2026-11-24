@@ -54,6 +54,8 @@ import androidx.compose.ui.unit.sp
 import com.adityapaul.wayfarer.data.route.RouteResult
 import com.adityapaul.wayfarer.data.route.TransportMode
 import com.adityapaul.wayfarer.ui.map.LiveNavigationState
+import com.adityapaul.wayfarer.ui.theme.TelemetryMedium
+import com.adityapaul.wayfarer.ui.theme.TelemetrySmall
 import kotlin.math.sin
 
 @Composable
@@ -118,10 +120,7 @@ fun ActiveNavigationOverlay(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
                                     text = navigationState.formattedRemainingDuration(),
-                                    style = MaterialTheme.typography.titleLarge.copy(
-                                        fontFeatureSettings = "tnum"
-                                    ),
-                                    fontWeight = FontWeight.ExtraBold,
+                                    style = TelemetryMedium.copy(fontSize = 22.sp),
                                     color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
@@ -131,10 +130,7 @@ fun ActiveNavigationOverlay(
                                 ) {
                                     Text(
                                         text = navigationState.formattedRemainingDistance(),
-                                        style = MaterialTheme.typography.labelMedium.copy(
-                                            fontFeatureSettings = "tnum"
-                                        ),
-                                        fontWeight = FontWeight.Bold,
+                                        style = TelemetrySmall,
                                         color = MaterialTheme.colorScheme.primary,
                                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                                     )
@@ -222,10 +218,7 @@ fun ActiveNavigationOverlay(
 
                             Text(
                                 text = "${navigationState.formattedRemainingDuration()} left (${navigationState.formattedRemainingDistance()})",
-                                style = MaterialTheme.typography.labelMedium.copy(
-                                    fontFeatureSettings = "tnum"
-                                ),
-                                fontWeight = FontWeight.Bold,
+                                style = TelemetrySmall,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                         }

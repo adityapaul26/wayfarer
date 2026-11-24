@@ -43,6 +43,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.adityapaul.wayfarer.data.route.TransportMode
 import com.adityapaul.wayfarer.ui.map.RouteState
+import com.adityapaul.wayfarer.ui.theme.TelemetryLarge
+import com.adityapaul.wayfarer.ui.theme.TelemetryMedium
+import com.adityapaul.wayfarer.ui.theme.TelemetrySmall
 
 @Composable
 fun RoutePreviewSheet(
@@ -113,8 +116,7 @@ fun RoutePreviewSheet(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "$displayDuration • $displayDistance",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
+                        style = TelemetryMedium.copy(fontSize = 17.sp),
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
@@ -271,10 +273,7 @@ fun RoutePreviewSheet(
                                         ) {
                                             Text(
                                                 text = "${route.formattedDistance()} • Fastest Route",
-                                                style = MaterialTheme.typography.labelMedium.copy(
-                                                    fontFeatureSettings = "tnum"
-                                                ),
-                                                fontWeight = FontWeight.Bold,
+                                                style = TelemetrySmall,
                                                 color = MaterialTheme.colorScheme.onSecondary,
                                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
                                             )
@@ -305,10 +304,7 @@ fun RoutePreviewSheet(
 
                                     Text(
                                         text = displayDuration,
-                                        fontSize = 44.sp,
-                                        fontWeight = FontWeight.ExtraBold,
-                                        letterSpacing = (-1.5).sp,
-                                        color = MaterialTheme.colorScheme.onSecondary,
+                                        style = TelemetryLarge.copy(color = MaterialTheme.colorScheme.onSecondary),
                                         modifier = Modifier.padding(vertical = 2.dp)
                                     )
 
