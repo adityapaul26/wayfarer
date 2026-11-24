@@ -2,6 +2,7 @@ package com.adityapaul.wayfarer.ui.settings
 
 import android.os.Build
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -28,13 +30,10 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SettingsBrightness
 import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
@@ -42,10 +41,7 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
-import kotlin.math.roundToInt
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -61,8 +57,8 @@ import com.adityapaul.wayfarer.ui.map.GeekLogsWindow
 import com.adityapaul.wayfarer.ui.map.MapViewModel
 import com.adityapaul.wayfarer.ui.theme.AppColorPalette
 import com.adityapaul.wayfarer.ui.theme.AppThemeMode
+import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     viewModel: MapViewModel,
@@ -80,30 +76,6 @@ fun SettingsScreen(
     }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Settings",
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back to Map"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
-                )
-            )
-        },
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Box(
@@ -115,177 +87,197 @@ fun SettingsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp, vertical = 12.dp)
+                    .statusBarsPadding()
+                    .padding(horizontal = 20.dp, vertical = 16.dp)
             ) {
-                // Header Banner / Intro Card
-                Surface(
-                    shape = RoundedCornerShape(24.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(18.dp)
-                    ) {
-                        Surface(
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(44.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Default.Settings,
-                                    contentDescription = "Settings",
-                                    tint = MaterialTheme.colorScheme.onPrimary,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column {
-                            Text(
-                                text = "App Appearance & Theme",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            Text(
-                                text = "Customize look, accent colors, and developer settings",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Section 1: THEME MODE
-                Text(
-                    text = "THEME MODE",
-                    style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp),
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
-                )
-
-                val isSystemDark = isSystemInDarkTheme()
+                // Large Expressive Header (40.sp extra-bold display title & 44.dp circular back button in surfaceContainerHigh)
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    AppThemeMode.entries.forEach { mode ->
-                        val isSelected = uiState.themeMode == mode
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(16.dp))
-                                .clickable { viewModel.setThemeMode(mode, isSystemDark) }
-                                .border(
-                                    width = if (isSelected) 0.dp else 1.dp,
-                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                                    shape = RoundedCornerShape(16.dp)
-                                )
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier.padding(vertical = 14.dp)
-                            ) {
-                                val icon = when (mode) {
-                                    AppThemeMode.SYSTEM -> Icons.Default.SettingsBrightness
-                                    AppThemeMode.LIGHT -> Icons.Default.LightMode
-                                    AppThemeMode.DARK -> Icons.Default.DarkMode
-                                }
-                                Icon(
-                                    imageVector = icon,
-                                    contentDescription = mode.displayName,
-                                    tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = mode.displayName,
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-                }
-
-                // Section 2: Material You Dynamic Color Toggle (Android 12+)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    Spacer(modifier = Modifier.height(24.dp))
-
                     Surface(
-                        shape = RoundedCornerShape(20.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .clickable { onBackClick() }
                             .border(
                                 width = 1.dp,
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
-                                shape = RoundedCornerShape(20.dp)
+                                color = MaterialTheme.colorScheme.outlineVariant,
+                                shape = CircleShape
                             )
                     ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back to Map",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Text(
+                        text = "Settings",
+                        fontSize = 40.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = (-1.5).sp,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Group 1: THEME & APPEARANCE
+                Text(
+                    text = "THEME & APPEARANCE",
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        letterSpacing = 0.5.sp
+                    ),
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(start = 6.dp, bottom = 8.dp)
+                )
+
+                Surface(
+                    shape = RoundedCornerShape(28.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(18.dp)) {
+                        Text(
+                            text = "Theme Mode",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Horizontal Pill-shaped Segmented Button Row (CircleShape)
+                        val isSystemDark = isSystemInDarkTheme()
                         Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = "Material You Dynamic Color",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = "Matches app colors to device wallpaper",
-                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                            AppThemeMode.entries.forEach { mode ->
+                                val isSelected = uiState.themeMode == mode
+                                Surface(
+                                    shape = CircleShape,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(CircleShape)
+                                        .clickable { viewModel.setThemeMode(mode, isSystemDark) }
+                                        .border(
+                                            width = if (isSelected) 0.dp else 1.dp,
+                                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                                            shape = CircleShape
+                                        )
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center,
+                                        modifier = Modifier.padding(vertical = 12.dp)
+                                    ) {
+                                        val icon = when (mode) {
+                                            AppThemeMode.SYSTEM -> Icons.Default.SettingsBrightness
+                                            AppThemeMode.LIGHT -> Icons.Default.LightMode
+                                            AppThemeMode.DARK -> Icons.Default.DarkMode
+                                        }
+                                        Icon(
+                                            imageVector = icon,
+                                            contentDescription = mode.displayName,
+                                            tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = mode.displayName,
+                                            style = MaterialTheme.typography.labelLarge,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        // Material You Dynamic Color Row (Android 12+)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            Spacer(modifier = Modifier.height(18.dp))
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                            Spacer(modifier = Modifier.height(18.dp))
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "Material You Dynamic Color",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = "Matches app colors to device wallpaper",
+                                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+
+                                // Expressive Switch with Thumb Icon Styling & Vibrant Active Tracks
+                                Switch(
+                                    checked = uiState.useDynamicColor,
+                                    onCheckedChange = { viewModel.toggleDynamicColor(it) },
+                                    thumbContent = {
+                                        if (uiState.useDynamicColor) {
+                                            Icon(
+                                                imageVector = Icons.Default.Check,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(SwitchDefaults.IconSize)
+                                            )
+                                        }
+                                    },
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                                        checkedTrackColor = MaterialTheme.colorScheme.primary,
+                                        uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                                        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                                    )
                                 )
                             }
-                            Switch(
-                                checked = uiState.useDynamicColor,
-                                onCheckedChange = { viewModel.toggleDynamicColor(it) },
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                                    checkedTrackColor = MaterialTheme.colorScheme.primary
-                                )
-                            )
                         }
                     }
                 }
 
-                // Section: GPS LOCATION REFRESH RATE
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
+                // Group 2: GPS LOCATION REFRESH RATE
                 Text(
                     text = "GPS LOCATION REFRESH RATE",
-                    style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp),
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        letterSpacing = 0.5.sp
+                    ),
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
+                    modifier = Modifier.padding(start = 6.dp, bottom = 8.dp)
                 )
 
                 Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
-                            shape = RoundedCornerShape(20.dp)
-                        )
+                    shape = RoundedCornerShape(28.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
+                        modifier = Modifier.padding(18.dp)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -294,7 +286,7 @@ fun SettingsScreen(
                             Surface(
                                 shape = CircleShape,
                                 color = MaterialTheme.colorScheme.primaryContainer,
-                                modifier = Modifier.size(38.dp)
+                                modifier = Modifier.size(40.dp)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Icon(
@@ -331,15 +323,17 @@ fun SettingsScreen(
                             ) {
                                 Text(
                                     text = "${uiState.locationUpdateIntervalSeconds}s",
-                                    style = MaterialTheme.typography.labelMedium,
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        fontFeatureSettings = "tnum"
+                                    ),
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onPrimary,
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp)
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(14.dp))
 
                         Slider(
                             value = uiState.locationUpdateIntervalSeconds.toFloat(),
@@ -378,79 +372,89 @@ fun SettingsScreen(
                     }
                 }
 
-                // Section 3: ACCENT COLOR PALETTE
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
+                // Group 3: ACCENT COLOR PALETTE
                 Text(
                     text = "ACCENT COLOR PALETTE",
-                    style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp),
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        letterSpacing = 0.5.sp
+                    ),
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
+                    modifier = Modifier.padding(start = 6.dp, bottom = 8.dp)
                 )
 
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth()
+                Surface(
+                    shape = RoundedCornerShape(28.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(18.dp)
                     ) {
-                        AppColorPalette.entries.take(3).forEach { palette ->
-                            PaletteChoiceCard(
-                                palette = palette,
-                                isSelected = uiState.colorPalette == palette,
-                                onSelect = { viewModel.setColorPalette(palette) },
-                                modifier = Modifier.weight(1f)
-                            )
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            AppColorPalette.entries.take(3).forEach { palette ->
+                                PaletteChoiceCard(
+                                    palette = palette,
+                                    isSelected = uiState.colorPalette == palette,
+                                    onSelect = { viewModel.setColorPalette(palette) },
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
                         }
-                    }
 
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        AppColorPalette.entries.drop(3).take(3).forEach { palette ->
-                            PaletteChoiceCard(
-                                palette = palette,
-                                isSelected = uiState.colorPalette == palette,
-                                onSelect = { viewModel.setColorPalette(palette) },
-                                modifier = Modifier.weight(1f)
-                            )
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            AppColorPalette.entries.drop(3).take(3).forEach { palette ->
+                                PaletteChoiceCard(
+                                    palette = palette,
+                                    isSelected = uiState.colorPalette == palette,
+                                    onSelect = { viewModel.setColorPalette(palette) },
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
                         }
                     }
                 }
 
-                // Section 4: Developer Telemetry (Logs for Geeks)
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
+                // Group 4: DEVELOPER TOOLS
                 Text(
                     text = "DEVELOPER TOOLS",
-                    style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp),
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        letterSpacing = 0.5.sp
+                    ),
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
+                    modifier = Modifier.padding(start = 6.dp, bottom = 8.dp)
                 )
 
                 Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    shape = RoundedCornerShape(28.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp))
+                        .clip(RoundedCornerShape(28.dp))
                         .clickable { viewModel.openGeekLogs() }
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
-                            shape = RoundedCornerShape(20.dp)
-                        )
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
+                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp)
                     ) {
                         Surface(
                             shape = CircleShape,
                             color = MaterialTheme.colorScheme.tertiaryContainer,
-                            modifier = Modifier.size(40.dp)
+                            modifier = Modifier.size(42.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
@@ -485,7 +489,7 @@ fun SettingsScreen(
                     }
                 }
 
-                // Section 5: App Version & Information
+                // Footer: Version & Attributions
                 Spacer(modifier = Modifier.height(32.dp))
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
                 Spacer(modifier = Modifier.height(20.dp))
@@ -495,7 +499,7 @@ fun SettingsScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "Wayfarer Maps v1.1.0",
+                        text = "Wayfarer Maps v2.0.0",
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -543,25 +547,26 @@ fun PaletteChoiceCard(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+        shape = CircleShape,
+        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
+            .clip(CircleShape)
             .clickable { onSelect() }
             .border(
                 width = if (isSelected) 1.5.dp else 1.dp,
                 color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
-                shape = RoundedCornerShape(16.dp)
+                shape = CircleShape
             )
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 12.dp)
         ) {
             Surface(
                 shape = CircleShape,
                 color = palette.previewColor,
-                modifier = Modifier.size(22.dp)
+                modifier = Modifier.size(20.dp)
             ) {
                 if (isSelected) {
                     Box(contentAlignment = Alignment.Center) {
@@ -569,12 +574,12 @@ fun PaletteChoiceCard(
                             imageVector = Icons.Default.Check,
                             contentDescription = "Selected",
                             tint = Color.White,
-                            modifier = Modifier.size(13.dp)
+                            modifier = Modifier.size(12.dp)
                         )
                     }
                 }
             }
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(6.dp))
             Text(
                 text = palette.displayName,
                 style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp),
