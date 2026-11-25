@@ -40,8 +40,6 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SwapVert
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalIconButton
@@ -372,18 +370,26 @@ fun SearchOverlay(
                         placeholder = {
                             Text(
                                 text = if (routeState.step == RouteSelectionStep.SELECT_ORIGIN) "Search origin place..." else "Search destination place...",
-                                style = MaterialTheme.typography.bodyMedium
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Search,
                                 contentDescription = "Search",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(20.dp)
                             )
                         },
                         trailingIcon = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                modifier = Modifier.padding(end = 6.dp)
+                            ) {
                                 if (searchState.query.isNotEmpty()) {
                                     IconButton(
                                         onClick = onClearSearch,
@@ -397,36 +403,38 @@ fun SearchOverlay(
                                         )
                                     }
                                 }
+
                                 if (routeState.step == RouteSelectionStep.SELECT_ORIGIN && hasUserLocation) {
-                                    AssistChip(
+                                    FilledTonalIconButton(
                                         onClick = onSelectOriginFromCurrentLocation,
-                                        label = { Text("My Location", style = MaterialTheme.typography.labelMedium) },
-                                        leadingIcon = {
-                                            Icon(
-                                                imageVector = Icons.Default.MyLocation,
-                                                contentDescription = "GPS",
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                        },
-                                        colors = AssistChipDefaults.assistChipColors(
+                                        colors = IconButtonDefaults.filledTonalIconButtonColors(
                                             containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                            labelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                            leadingIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                                         ),
-                                        shape = CircleShape,
-                                        modifier = Modifier.padding(end = 4.dp)
-                                    )
+                                        modifier = Modifier.size(36.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.MyLocation,
+                                            contentDescription = "Use My Location",
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
                                 }
+
                                 FilledIconButton(
                                     onClick = {
                                         keyboardController?.hide()
                                         onSubmitSearch()
                                     },
+                                    colors = IconButtonDefaults.filledIconButtonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        contentColor = MaterialTheme.colorScheme.onPrimary
+                                    ),
                                     modifier = Modifier.size(36.dp)
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Search,
-                                        contentDescription = "Search",
+                                        contentDescription = "Submit Search",
                                         modifier = Modifier.size(18.dp)
                                     )
                                 }
@@ -443,10 +451,13 @@ fun SearchOverlay(
                         shape = CircleShape,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
+                            .height(52.dp)
                             .onFocusChanged { focusState ->
                                 if (focusState.isFocused) {
                                     onExpandSearchPanel()
