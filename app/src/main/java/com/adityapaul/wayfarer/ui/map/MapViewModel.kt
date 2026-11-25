@@ -819,6 +819,10 @@ class MapViewModel(
         }
     }
 
+    fun setUserMessage(message: String) {
+        _uiState.update { it.copy(userMessage = message) }
+    }
+
     fun dismissUserMessage() {
         _uiState.update { it.copy(userMessage = null) }
     }

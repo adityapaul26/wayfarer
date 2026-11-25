@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -30,11 +31,12 @@ fun MapControlsOverlay(
     onRecenterLocation: () -> Unit,
     onRequestPermission: () -> Unit,
     onToggleSettings: () -> Unit,
-    modifier: Modifier = Modifier,
+    onShareLocation: () -> Unit = {},
     showSpeedometer: Boolean = false,
     currentSpeedFormatted: String = "0",
     speedProgress: Float = 0f,
-    speedUnit: SpeedUnit = SpeedUnit.KMH
+    speedUnit: SpeedUnit = SpeedUnit.KMH,
+    modifier: Modifier = Modifier
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -93,6 +95,25 @@ fun MapControlsOverlay(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier.padding(4.dp)
             ) {
+                // Share Coordinates Button
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .clickable { onShareLocation() }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = "Share Location Coordinates",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+
                 Surface(
                     shape = CircleShape,
                     color = if (isSettingsOpen) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,

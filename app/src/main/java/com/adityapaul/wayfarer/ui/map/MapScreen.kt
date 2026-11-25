@@ -5,6 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +30,8 @@ import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Share
+import com.adityapaul.wayfarer.utils.LocationShareUtils
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -179,6 +182,19 @@ fun MapScreen(
                     )
                 },
                 onToggleSettings = { viewModel.toggleSettings() },
+                onShareLocation = {
+                    val loc = uiState.userLocation
+                    if (loc != null) {
+                        LocationShareUtils.shareCoordinates(
+                            context = context,
+                            latitude = loc.latitude,
+                            longitude = loc.longitude,
+                            locationName = "My Location"
+                        )
+                    } else {
+                        viewModel.setUserMessage("Current GPS location not available")
+                    }
+                },
                 showSpeedometer = uiState.showSpeedometerInFreeDrive && !routeState.navigationState.isNavigating,
                 currentSpeedFormatted = uiState.currentSpeedFormatted,
                 speedProgress = uiState.speedProgress,
@@ -314,29 +330,66 @@ fun MapScreen(
 
                                     Spacer(modifier = Modifier.height(16.dp))
 
-                                    Button(
-                                        onClick = {
-                                            viewModel.startRoutePlanning()
-                                            viewModel.selectDestination(selected)
-                                        },
-                                        shape = CircleShape,
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = MaterialTheme.colorScheme.primary,
-                                            contentColor = MaterialTheme.colorScheme.onPrimary
-                                        ),
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Directions,
-                                            contentDescription = "Route to Place",
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text(
-                                            text = "Get Route Directions",
-                                            style = MaterialTheme.typography.titleSmall,
-                                            fontWeight = FontWeight.Bold
-                                        )
+                                        Button(
+                                            onClick = {
+                                                viewModel.startRoutePlanning()
+                                                viewModel.selectDestination(selected)
+                                            },
+                                            shape = CircleShape,
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = MaterialTheme.colorScheme.primary,
+                                                contentColor = MaterialTheme.colorScheme.onPrimary
+                                            ),
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .height(48.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Directions,
+                                                contentDescription = "Route to Place",
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = "Get Route",
+                                                style = MaterialTheme.typography.titleSmall,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+
+                                        Surface(
+                                            shape = CircleShape,
+                                            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                            modifier = Modifier
+                                                .size(48.dp)
+                                                .clip(CircleShape)
+                                                .clickable {
+                                                    LocationShareUtils.shareCoordinates(
+                                                        context = context,
+                                                        latitude = selected.latitude,
+                                                        longitude = selected.longitude,
+                                                        locationName = selected.name
+                                                    )
+                                                }
+                                                .border(
+                                                    width = 1.dp,
+                                                    color = MaterialTheme.colorScheme.outlineVariant,
+                                                    shape = CircleShape
+                                                )
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Share,
+                                                    contentDescription = "Share Coordinates",
+                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }
