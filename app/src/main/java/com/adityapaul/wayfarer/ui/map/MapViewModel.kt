@@ -443,7 +443,7 @@ class MapViewModel(
         _uiState.update { currentState ->
             currentState.copy(
                 selectedPinLocation = null,
-                searchState = resetSearchQueryState(currentState),
+                searchState = resetSearchQueryState(currentState).copy(isExpanded = true),
                 routeState = RouteState(step = RouteSelectionStep.SELECT_ORIGIN)
             )
         }
@@ -456,7 +456,7 @@ class MapViewModel(
                     origin = origin,
                     step = RouteSelectionStep.SELECT_DEST
                 ),
-                searchState = resetSearchQueryState(currentState)
+                searchState = resetSearchQueryState(currentState).copy(isExpanded = true)
             )
         }
     }
@@ -485,7 +485,8 @@ class MapViewModel(
                     origin = null,
                     step = RouteSelectionStep.SELECT_ORIGIN,
                     activeRoute = null
-                )
+                ),
+                searchState = resetSearchQueryState(currentState).copy(isExpanded = true)
             )
         }
     }
@@ -497,7 +498,8 @@ class MapViewModel(
                     destination = null,
                     step = RouteSelectionStep.SELECT_DEST,
                     activeRoute = null
-                )
+                ),
+                searchState = resetSearchQueryState(currentState).copy(isExpanded = true)
             )
         }
     }

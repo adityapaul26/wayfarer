@@ -67,6 +67,19 @@ class MapViewModelTest {
         assertEquals(RouteSelectionStep.SELECT_ORIGIN, routeState.step)
         assertNull(routeState.origin)
         assertNull(routeState.destination)
+        assertTrue(viewModel.uiState.value.searchState.isExpanded)
+    }
+
+    @Test
+    fun selectOrigin_transitionsToSelectDest_keepsSearchExpandedForDestination() {
+        val origin = SearchResult(1L, "Howrah Bridge", "Howrah, WB", "Bridge", 22.5851, 88.3468)
+        viewModel.startRoutePlanning()
+        viewModel.selectOrigin(origin)
+
+        val state = viewModel.uiState.value
+        assertEquals(RouteSelectionStep.SELECT_DEST, state.routeState.step)
+        assertEquals("Howrah Bridge", state.routeState.origin?.name)
+        assertTrue(state.searchState.isExpanded)
     }
 
     @Test
