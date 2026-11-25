@@ -2,6 +2,7 @@ package com.adityapaul.wayfarer.ui.map
 
 import android.content.Context
 import android.location.Location
+import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.adityapaul.wayfarer.data.location.DefaultLocationClient
@@ -17,6 +18,7 @@ import com.adityapaul.wayfarer.data.search.RecentSearchRepository
 import com.adityapaul.wayfarer.data.search.SearchResult
 import com.adityapaul.wayfarer.data.search.SharedPreferencesRecentSearchRepository
 import com.adityapaul.wayfarer.data.settings.SharedPreferencesUserPreferencesRepository
+import com.adityapaul.wayfarer.data.settings.SpeedUnit
 import com.adityapaul.wayfarer.data.settings.UserPreferencesRepository
 import com.adityapaul.wayfarer.ui.theme.AppColorPalette
 import com.adityapaul.wayfarer.ui.theme.AppThemeMode
@@ -68,10 +70,79 @@ class MapViewModel(
                     colorPalette = prefs.colorPalette,
                     useDynamicColor = prefs.useDynamicColor,
                     locationUpdateIntervalSeconds = prefs.locationUpdateIntervalSeconds,
-                    styleType = initialStyle
+                    styleType = initialStyle,
+                    speedUnit = prefs.speedUnit,
+                    showSpeedometerInFreeDrive = prefs.showSpeedometerInFreeDrive
                 )
             }
         }
+    }
+
+    private var lastLocation: Location? = null
+    private var smoothedSpeedMps: Float = 0f
+
+    private fun processSpeedTelemetry(
+        location: Location,
+        currentState: MapState
+    ): Triple<Float, String, Float> {
+        val rawSpeed = if (location.hasSpeed() && location.speed > 0f) {
+            location.speed
+        } else {
+            NavigationUtils.calculateSpeedMps(lastLocation, location)
+        }
+
+        val accuracy = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && location.hasSpeedAccuracy()) {
+            location.speedAccuracyMetersPerSecond
+        } else 0f
+
+        val filteredSpeed = if (rawSpeed < 0.35f || (accuracy > 0f && accuracy > rawSpeed * 1.5f)) {
+            0f
+        } else {
+            rawSpeed
+        }
+
+        val alpha = 0.35f
+        smoothedSpeedMps = smoothedSpeedMps * (1f - alpha) + filteredSpeed * alpha
+        if (smoothedSpeedMps < 0.05f) {
+            smoothedSpeedMps = 0f
+        }
+
+        val speedUnit = currentState.speedUnit
+        val speedInUnit = when (speedUnit) {
+            SpeedUnit.KMH -> smoothedSpeedMps * 3.6f
+            SpeedUnit.MPH -> smoothedSpeedMps * 2.23694f
+        }
+
+        val formattedSpeed = String.format(Locale.US, "%.0f", speedInUnit)
+        val progress = (speedInUnit / speedUnit.maxSpeed).coerceIn(0f, 1f)
+
+        lastLocation = location
+
+        return Triple(smoothedSpeedMps, formattedSpeed, progress)
+    }
+
+    fun setSpeedUnit(speedUnit: SpeedUnit) {
+        userPreferencesRepository?.saveSpeedUnit(speedUnit)
+        _uiState.update { currentState ->
+            val mps = currentState.currentSpeedMps
+            val speedInUnit = when (speedUnit) {
+                SpeedUnit.KMH -> mps * 3.6f
+                SpeedUnit.MPH -> mps * 2.23694f
+            }
+            val formatted = String.format(Locale.US, "%.0f", speedInUnit)
+            val progress = (speedInUnit / speedUnit.maxSpeed).coerceIn(0f, 1f)
+
+            currentState.copy(
+                speedUnit = speedUnit,
+                currentSpeedFormatted = formatted,
+                speedProgress = progress
+            )
+        }
+    }
+
+    fun setShowSpeedometerInFreeDrive(show: Boolean) {
+        userPreferencesRepository?.saveShowSpeedometerInFreeDrive(show)
+        _uiState.update { it.copy(showSpeedometerInFreeDrive = show) }
     }
 
     fun checkAndStartLocation(context: Context) {
@@ -115,9 +186,13 @@ class MapViewModel(
             }
             .onEach { location ->
                 _uiState.update { currentState ->
+                    val (mps, formatted, progress) = processSpeedTelemetry(location, currentState)
                     val updatedNavState = processNavigationProgress(location, currentState)
                     currentState.copy(
                         userLocation = location,
+                        currentSpeedMps = mps,
+                        currentSpeedFormatted = formatted,
+                        speedProgress = progress,
                         isGpsEnabled = true,
                         routeState = currentState.routeState.copy(
                             navigationState = updatedNavState

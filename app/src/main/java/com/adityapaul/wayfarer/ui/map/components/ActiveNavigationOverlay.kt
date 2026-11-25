@@ -58,11 +58,16 @@ import com.adityapaul.wayfarer.ui.theme.TelemetryMedium
 import com.adityapaul.wayfarer.ui.theme.TelemetrySmall
 import kotlin.math.sin
 
+import com.adityapaul.wayfarer.data.settings.SpeedUnit
+
 @Composable
 fun ActiveNavigationOverlay(
     activeRoute: RouteResult?,
     navigationState: LiveNavigationState,
     transportMode: TransportMode,
+    currentSpeedFormatted: String,
+    speedProgress: Float,
+    speedUnit: SpeedUnit,
     onStopNavigation: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -191,6 +196,20 @@ fun ActiveNavigationOverlay(
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
+
+                // Floating Speedometer Pill during Navigation
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
+                ) {
+                    SpeedometerPill(
+                        currentSpeedFormatted = currentSpeedFormatted,
+                        speedProgress = speedProgress,
+                        speedUnit = speedUnit
+                    )
+                }
 
                 // Bottom Expressive Wavy Progress Bar Card
                 Surface(

@@ -406,6 +406,36 @@ class MapViewModelTest {
         assertTrue(fakePrefsRepo.preferences.useDynamicColor)
         assertEquals(6, fakePrefsRepo.preferences.locationUpdateIntervalSeconds)
     }
+
+    @Test
+    fun setSpeedUnit_updatesStateAndSavesToPreferences() {
+        val fakePrefsRepo = FakeUserPreferencesRepository()
+        val testViewModel = MapViewModel(
+            geocodingRepository = fakeGeocodingRepository,
+            routeRepository = fakeRouteRepository,
+            userPreferencesRepository = fakePrefsRepo
+        )
+
+        testViewModel.setSpeedUnit(com.adityapaul.wayfarer.data.settings.SpeedUnit.MPH)
+
+        assertEquals(com.adityapaul.wayfarer.data.settings.SpeedUnit.MPH, testViewModel.uiState.value.speedUnit)
+        assertEquals(com.adityapaul.wayfarer.data.settings.SpeedUnit.MPH, fakePrefsRepo.preferences.speedUnit)
+    }
+
+    @Test
+    fun setShowSpeedometerInFreeDrive_updatesStateAndPreferences() {
+        val fakePrefsRepo = FakeUserPreferencesRepository()
+        val testViewModel = MapViewModel(
+            geocodingRepository = fakeGeocodingRepository,
+            routeRepository = fakeRouteRepository,
+            userPreferencesRepository = fakePrefsRepo
+        )
+
+        testViewModel.setShowSpeedometerInFreeDrive(false)
+
+        assertFalse(testViewModel.uiState.value.showSpeedometerInFreeDrive)
+        assertFalse(fakePrefsRepo.preferences.showSpeedometerInFreeDrive)
+    }
 }
 
 private class FakeUserPreferencesRepository : com.adityapaul.wayfarer.data.settings.UserPreferencesRepository {
@@ -431,6 +461,14 @@ private class FakeUserPreferencesRepository : com.adityapaul.wayfarer.data.setti
 
     override fun saveMapStyleType(mapStyleType: MapStyleType) {
         preferences = preferences.copy(mapStyleType = mapStyleType)
+    }
+
+    override fun saveSpeedUnit(speedUnit: com.adityapaul.wayfarer.data.settings.SpeedUnit) {
+        preferences = preferences.copy(speedUnit = speedUnit)
+    }
+
+    override fun saveShowSpeedometerInFreeDrive(show: Boolean) {
+        preferences = preferences.copy(showSpeedometerInFreeDrive = show)
     }
 }
 

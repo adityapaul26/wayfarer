@@ -99,4 +99,20 @@ object NavigationUtils {
         }
         return total
     }
+
+    fun calculateSpeedMps(prevLoc: Location?, currLoc: Location): Float {
+        if (currLoc.hasSpeed() && currLoc.speed > 0f) {
+            return currLoc.speed
+        }
+        if (prevLoc == null) return 0f
+
+        val timeDeltaSeconds = (currLoc.elapsedRealtimeNanos - prevLoc.elapsedRealtimeNanos) / 1_000_000_000.0
+        if (timeDeltaSeconds <= 0.1) return 0f
+
+        val dist = distanceMeters(
+            LatLng(prevLoc.latitude, prevLoc.longitude),
+            LatLng(currLoc.latitude, currLoc.longitude)
+        )
+        return (dist / timeDeltaSeconds).toFloat()
+    }
 }

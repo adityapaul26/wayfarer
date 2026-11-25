@@ -6,12 +6,19 @@ import com.adityapaul.wayfarer.ui.map.MapStyleType
 import com.adityapaul.wayfarer.ui.theme.AppColorPalette
 import com.adityapaul.wayfarer.ui.theme.AppThemeMode
 
+enum class SpeedUnit(val displayName: String, val label: String, val maxSpeed: Float) {
+    KMH("Metric (km/h)", "KM/H", 120f),
+    MPH("Imperial (mph)", "MPH", 75f)
+}
+
 data class UserPreferences(
     val themeMode: AppThemeMode = AppThemeMode.SYSTEM,
     val colorPalette: AppColorPalette = AppColorPalette.LAVENDER_PURPLE,
     val useDynamicColor: Boolean = false,
     val locationUpdateIntervalSeconds: Int = 3,
     val mapStyleType: MapStyleType = MapStyleType.LIGHT,
+    val speedUnit: SpeedUnit = SpeedUnit.KMH,
+    val showSpeedometerInFreeDrive: Boolean = true
 )
 
 interface UserPreferencesRepository {
@@ -21,6 +28,8 @@ interface UserPreferencesRepository {
     fun saveUseDynamicColor(useDynamicColor: Boolean)
     fun saveLocationUpdateIntervalSeconds(intervalSeconds: Int)
     fun saveMapStyleType(mapStyleType: MapStyleType)
+    fun saveSpeedUnit(speedUnit: SpeedUnit)
+    fun saveShowSpeedometerInFreeDrive(show: Boolean)
 }
 
 class SharedPreferencesUserPreferencesRepository(
@@ -54,12 +63,23 @@ class SharedPreferencesUserPreferencesRepository(
             MapStyleType.LIGHT
         }
 
+        val unitName = prefs.getString(KEY_SPEED_UNIT, SpeedUnit.KMH.name)
+        val speedUnit = try {
+            SpeedUnit.valueOf(unitName ?: SpeedUnit.KMH.name)
+        } catch (_: Exception) {
+            SpeedUnit.KMH
+        }
+
+        val showSpeedometer = prefs.getBoolean(KEY_SHOW_SPEEDOMETER_FREE_DRIVE, true)
+
         return UserPreferences(
             themeMode = themeMode,
             colorPalette = colorPalette,
             useDynamicColor = useDynamicColor,
             locationUpdateIntervalSeconds = locationInterval,
-            mapStyleType = mapStyleType
+            mapStyleType = mapStyleType,
+            speedUnit = speedUnit,
+            showSpeedometerInFreeDrive = showSpeedometer
         )
     }
 
@@ -83,6 +103,14 @@ class SharedPreferencesUserPreferencesRepository(
         prefs.edit { putString(KEY_MAP_STYLE, mapStyleType.name) }
     }
 
+    override fun saveSpeedUnit(speedUnit: SpeedUnit) {
+        prefs.edit { putString(KEY_SPEED_UNIT, speedUnit.name) }
+    }
+
+    override fun saveShowSpeedometerInFreeDrive(show: Boolean) {
+        prefs.edit { putBoolean(KEY_SHOW_SPEEDOMETER_FREE_DRIVE, show) }
+    }
+
     companion object {
         private const val PREFS_NAME = "wayfarer_user_preferences"
         private const val KEY_THEME_MODE = "theme_mode"
@@ -90,5 +118,7 @@ class SharedPreferencesUserPreferencesRepository(
         private const val KEY_DYNAMIC_COLOR = "use_dynamic_color"
         private const val KEY_LOCATION_INTERVAL = "location_interval_seconds"
         private const val KEY_MAP_STYLE = "map_style_type"
+        private const val KEY_SPEED_UNIT = "speed_unit"
+        private const val KEY_SHOW_SPEEDOMETER_FREE_DRIVE = "show_speedometer_free_drive"
     }
 }

@@ -21,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 
+import com.adityapaul.wayfarer.data.settings.SpeedUnit
+
 @Composable
 fun MapControlsOverlay(
     isLocationPermissionGranted: Boolean,
@@ -28,13 +30,24 @@ fun MapControlsOverlay(
     onRecenterLocation: () -> Unit,
     onRequestPermission: () -> Unit,
     onToggleSettings: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showSpeedometer: Boolean = false,
+    currentSpeedFormatted: String = "0",
+    speedProgress: Float = 0f,
+    speedUnit: SpeedUnit = SpeedUnit.KMH
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
     ) {
+        if (showSpeedometer) {
+            SpeedometerPill(
+                currentSpeedFormatted = currentSpeedFormatted,
+                speedProgress = speedProgress,
+                speedUnit = speedUnit
+            )
+        }
         // Primary "Re-center / My Location" Button: Bold Squircle (18.dp) filled with vibrant secondary accent & dark high-contrast icon tint
         Surface(
             shape = RoundedCornerShape(18.dp),

@@ -142,11 +142,14 @@ fun MapScreen(
                     .align(Alignment.TopCenter)
             )
 
-            // Active Navigation Overlay (Top Turn-by-Turn Banner)
+            // Active Navigation Overlay (Top Turn-by-Turn Banner & Speedometer)
             ActiveNavigationOverlay(
                 activeRoute = routeState.activeRoute,
                 navigationState = routeState.navigationState,
                 transportMode = routeState.transportMode,
+                currentSpeedFormatted = uiState.currentSpeedFormatted,
+                speedProgress = uiState.speedProgress,
+                speedUnit = uiState.speedUnit,
                 onStopNavigation = { viewModel.stopLiveNavigation() },
                 modifier = Modifier.align(Alignment.TopCenter)
             )
@@ -176,6 +179,10 @@ fun MapScreen(
                     )
                 },
                 onToggleSettings = { viewModel.toggleSettings() },
+                showSpeedometer = uiState.showSpeedometerInFreeDrive && !routeState.navigationState.isNavigating,
+                currentSpeedFormatted = uiState.currentSpeedFormatted,
+                speedProgress = uiState.speedProgress,
+                speedUnit = uiState.speedUnit,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .navigationBarsPadding()

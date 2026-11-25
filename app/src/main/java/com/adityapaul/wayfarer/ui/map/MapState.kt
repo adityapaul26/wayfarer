@@ -5,6 +5,7 @@ import android.os.Build
 import com.adityapaul.wayfarer.data.route.RouteResult
 import com.adityapaul.wayfarer.data.route.TransportMode
 import com.adityapaul.wayfarer.data.search.SearchResult
+import com.adityapaul.wayfarer.data.settings.SpeedUnit
 import com.adityapaul.wayfarer.ui.theme.AppColorPalette
 import com.adityapaul.wayfarer.ui.theme.AppThemeMode
 import org.maplibre.android.geometry.LatLng
@@ -106,6 +107,11 @@ data class MapState(
     val colorPalette: AppColorPalette = AppColorPalette.LAVENDER_PURPLE,
     val useDynamicColor: Boolean = false,
     val locationUpdateIntervalSeconds: Int = 3,
+    val speedUnit: SpeedUnit = SpeedUnit.KMH,
+    val showSpeedometerInFreeDrive: Boolean = true,
+    val currentSpeedMps: Float = 0f,
+    val currentSpeedFormatted: String = "0",
+    val speedProgress: Float = 0f,
     val isSettingsOpen: Boolean = false,
     val isGeekLogsOpen: Boolean = false,
     val geekLogs: List<GeekLogEntry> = emptyList()
