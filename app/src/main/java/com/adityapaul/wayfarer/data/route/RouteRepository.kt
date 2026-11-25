@@ -77,12 +77,32 @@ class OsrmRouteRepository(
                 return@withContext Result.failure(Exception("Parsed route contains no valid coordinates"))
             }
 
+            val rawDistance = firstRoute.distanceMeters ?: 0.0
+            val rawDuration = firstRoute.durationSeconds ?: 0.0
+
+            // Calculate realistic mode-specific duration based on transport profile speeds
+            val calculatedDuration = when (transportMode) {
+                TransportMode.DRIVING -> {
+                    if (rawDuration > 0) rawDuration else (rawDistance / (35.0 * 1000.0 / 3600.0))
+                }
+                TransportMode.CYCLING -> {
+                    // Average cycling speed: 15 km/h (4.167 m/s)
+                    val cyclingSpeedMps = 15.0 * 1000.0 / 3600.0
+                    rawDistance / cyclingSpeedMps
+                }
+                TransportMode.WALKING -> {
+                    // Average walking speed: 5 km/h (1.389 m/s)
+                    val walkingSpeedMps = 5.0 * 1000.0 / 3600.0
+                    rawDistance / walkingSpeedMps
+                }
+            }
+
             val result = RouteResult(
                 originName = originName,
                 destinationName = destinationName,
                 points = points,
-                distanceMeters = firstRoute.distanceMeters ?: 0.0,
-                durationSeconds = firstRoute.durationSeconds ?: 0.0,
+                distanceMeters = rawDistance,
+                durationSeconds = calculatedDuration,
                 transportMode = transportMode
             )
 
