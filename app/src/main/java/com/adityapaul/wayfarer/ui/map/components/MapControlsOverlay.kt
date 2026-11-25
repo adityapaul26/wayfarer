@@ -33,7 +33,7 @@ fun MapControlsOverlay(
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.padding(end = 16.dp)
+        modifier = modifier
     ) {
         // Primary "Re-center / My Location" Button: Bold Squircle (18.dp) filled with vibrant secondary accent & dark high-contrast icon tint
         Surface(

@@ -151,7 +151,18 @@ fun MapScreen(
                 modifier = Modifier.align(Alignment.TopCenter)
             )
 
-            // Floating Map Controls (Recenter to GPS location & Settings FAB)
+            val hasBottomSheet = uiState.isGeekLogsOpen ||
+                    routeState.isCalculatingRoute ||
+                    routeState.activeRoute != null ||
+                    uiState.selectedPinLocation != null
+
+            val controlsBottomPadding = when {
+                !hasBottomSheet -> 48.dp
+                routeState.isCollapsed -> 100.dp
+                else -> 260.dp
+            }
+
+            // Floating Map Controls (Recenter to GPS location & Settings FAB - Bottom Right Corner)
             MapControlsOverlay(
                 isLocationPermissionGranted = uiState.isLocationPermissionGranted,
                 isSettingsOpen = uiState.isSettingsOpen,
@@ -165,7 +176,10 @@ fun MapScreen(
                     )
                 },
                 onToggleSettings = { viewModel.toggleSettings() },
-                modifier = Modifier.align(Alignment.CenterEnd)
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .navigationBarsPadding()
+                    .padding(end = 16.dp, bottom = controlsBottomPadding)
             )
 
             // Bottom Sheets: Logs for Geeks, Route Preview Sheet, or Selected Search Place Pin Sheet
