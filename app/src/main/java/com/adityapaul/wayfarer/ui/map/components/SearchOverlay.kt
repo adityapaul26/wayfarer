@@ -36,7 +36,6 @@ import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SwapVert
@@ -110,7 +109,7 @@ fun SearchOverlay(
                         .fillMaxWidth()
                         .padding(horizontal = 10.dp)
                 ) {
-                    // Left Icon: Menu / Search Button
+                    // Left Icon: Search Button
                     IconButton(
                         onClick = {
                             keyboardController?.hide()
@@ -119,8 +118,8 @@ fun SearchOverlay(
                         modifier = Modifier.size(42.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Menu,
-                            contentDescription = "Menu",
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(22.dp)
                         )

@@ -338,27 +338,6 @@ fun MapScreen(
                 }
             }
 
-            // Material 3 Map Attribution Footer (Bottom Left)
-            Surface(
-                shape = RoundedCornerShape(10.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.85f),
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .navigationBarsPadding()
-                    .padding(start = 12.dp, bottom = 8.dp)
-                    .border(
-                        width = 0.5.dp,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
-                        shape = RoundedCornerShape(10.dp)
-                    )
-            ) {
-                Text(
-                    text = uiState.attributionText,
-                    style = MaterialTheme.typography.labelMedium.copy(fontSize = 10.sp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                )
-            }
         }
     }
 }

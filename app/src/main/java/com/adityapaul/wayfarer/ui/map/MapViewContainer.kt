@@ -81,7 +81,7 @@ fun MapViewContainer(
                 mapLibreMap = map
 
                 // Configure MapLibre UI settings
-                map.uiSettings.isAttributionEnabled = true
+                map.uiSettings.isAttributionEnabled = false
                 map.uiSettings.isLogoEnabled = true
 
                 // Initial camera position
