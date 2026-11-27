@@ -6,7 +6,7 @@
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2.10-7F52FF.svg?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org/)
 [![Compose](https://img.shields.io/badge/Jetpack_Compose-Material_3_Expressive-4285F4.svg?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com/jetpack/compose)
-[![Version](https://img.shields.io/badge/Version-2.1.0-C699FF.svg?style=for-the-badge)](https://github.com/)
+[![Version](https://img.shields.io/badge/Version-2.2.0-C699FF.svg?style=for-the-badge)](https://github.com/)
 [![MapLibre](https://img.shields.io/badge/MapLibre_GL-v13.7.1-00A98F.svg?style=for-the-badge&logo=maplibre&logoColor=white)](https://maplibre.org/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
